@@ -1,0 +1,6 @@
+CREATE USER butler WITH SUPERUSER PASSWORD 'vvnfXy7UZeJmwfA9';
+CREATE USER butler_interface WITH SUPERUSER PASSWORD 'vvnfXy7UZeJmwfA9';
+CREATE DATABASE butler_dev;
+CREATE DATABASE butler_interface;
+GRANT ALL PRIVILEGES ON DATABASE butler_dev TO butler;
+GRANT ALL PRIVILEGES ON DATABASE butler_interface TO butler_interface;

@@ -1,0 +1,146 @@
+services:
+  # Kafka (KRaft mode - no Zookeeper needed)
+  # Init container to fix permissions
+  kafka-init:
+    image: alpine:latest
+    command: |
+      sh -c '
+        chown -R 1000:1000 /tmp/kafka-logs
+        echo "Permissions fixed"
+      '
+    volumes:
+      - kafka-data:/tmp/kafka-logs
+    networks:
+      - amar-dev-net
+
+  kafka:
+    image: apache/kafka:4.1.0
+    container_name: kafka
+    depends_on:
+      - kafka-init
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 4
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      CLUSTER_ID: MkU3OEVBRjcwNTJENDM2Qk
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/tmp/kafka-logs
+    networks:
+      - amar-dev-net
+
+  # PostgreSQL with init.sql support
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - amar-dev-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-monitoring}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # InfluxDB
+  influxdb:
+    image: influxdb:1.8.10-alpine
+    platform: linux/x86_64
+    container_name: influxdb
+    environment:
+      INFLUXDB_DB: ${INFLUXDB_DB:-telegraf}
+      INFLUXDB_ADMIN_USER: ${INFLUXDB_ADMIN_USER:-admin}
+      INFLUXDB_ADMIN_PASSWORD: ${INFLUXDB_ADMIN_PASSWORD:-admin123456}
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb
+      - influxdb-config:/etc/influxdb
+    networks:
+      - amar-dev-net
+
+  # Telegraf
+  telegraf:
+    image: telegraf:1.28-alpine
+    container_name: telegraf
+    depends_on:
+      - influxdb
+      - kafka
+    environment:
+      INFLUX_TOKEN: ${INFLUX_TOKEN:-my-super-secret-auth-token}
+      INFLUX_ORG: ${INFLUX_ORG:-monitoring}
+      INFLUX_BUCKET: ${INFLUX_BUCKET:-telegraf}
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /sys:/rootfs/sys:ro
+      - /proc:/rootfs/proc:ro
+      - /etc:/rootfs/etc:ro
+    networks:
+      - amar-dev-net
+    privileged: true
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    depends_on:
+      - postgres
+      - influxdb
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin123}
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - amar-dev-net
+
+  # Kowl (Kafka UI) - Now using Redpanda Console (the successor)
+  kowl:
+    image: redpandadata/console:v2.3.8
+    container_name: kowl
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_SCHEMAREGISTRY_ENABLED: false
+      KAFKA_PROTOBUF_ENABLED: false
+      SERVER_LISTENPORT: 8080
+    ports:
+      - "8080:8080"
+    networks:
+      - amar-dev-net
+
+networks:
+  amar-dev-net:
+    driver: bridge
+
+volumes:
+  kafka-data:
+  postgres-data:
+  influxdb-data:
+  influxdb-config:
+  grafana-data:

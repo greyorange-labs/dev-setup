@@ -1,0 +1,255 @@
+# ================================
+# GIT CONFIGURATION FILE
+# ================================
+# This file contains comprehensive Git settings with detailed explanations
+# Apply this config using: git config --global include.path ~/.gitconfig
+
+[core]
+    # Editor for commit messages and interactive operations
+    # Options: vim, nano, code, subl, atom, emacs
+    # Impact: Determines which editor opens for commit messages, rebases, etc.
+    # When to set: If you want a specific editor instead of system default
+    # editor = code --wait  # VS Code (uncomment and modify as needed)
+    # editor = vim          # Vim editor
+    # editor = nano         # Nano editor
+
+    # Pager for displaying long output (log, diff, etc.)
+    # Options: less, more, cat, delta, bat
+    # Impact: Controls how Git displays multi-page output
+    # When to use: 'less' is standard and feature-rich, 'cat' disables paging
+    pager = less
+    # pager = delta         # Modern syntax-highlighting pager (install: brew install git-delta)
+    # pager = bat           # Syntax-highlighting pager (install: brew install bat)
+
+    # Line ending handling - CRITICAL for cross-platform development
+    # Options: true, false, input
+    # Impact: Controls how Git handles line endings between Windows (CRLF) and Unix (LF)
+    # When to use: 'input' converts CRLF->LF on commit, leaves LF as-is (recommended for mixed teams)
+    autocrlf = input
+    # autocrlf = true       # Windows: convert LF->CRLF on checkout, CRLF->LF on commit
+    # autocrlf = false      # No conversion (use when team uses same OS)
+
+    # File permissions handling
+    # Impact: Whether Git tracks executable bit changes
+    # When to enable: Set to false on Windows/shared drives where permissions are unreliable
+    # filemode = false
+
+    # Whitespace handling
+    # Impact: How Git handles trailing whitespace and mixed tabs/spaces
+    # When to enable: In teams with strict whitespace policies
+    # whitespace = trailing-space,space-before-tab
+
+    # Large file handling with Git LFS
+    # Impact: Automatically use Git LFS for large files
+    # When to enable: Projects with binary assets, large files (>100MB)
+    # attributesfile = ~/.gitattributes
+
+[user]
+    # Your identity for Git commits - REQUIRED
+    # Impact: Appears in commit history, tags, and Git operations
+    # When to set: Always set these for proper attribution
+    name = Amar Chand
+    email = amar.c@greyorange.com
+
+    # GPG signing (optional but recommended for security)
+    # Impact: Cryptographically signs your commits for verification
+    # When to enable: For secure/enterprise environments, open source contributions
+    # signingkey = YOUR_GPG_KEY_ID
+    # gpgsign = true
+
+[alias]
+    # Productivity aliases - customize based on your workflow
+    # Impact: Shorter commands for common operations
+    # When to use: Daily Git operations, complex command combinations
+
+    # Basic command shortcuts
+    st = status              # Quick status check
+    co = checkout           # Switch branches/restore files
+    br = branch             # List/manage branches
+    ci = commit             # Create commits
+
+    # Advanced logging and visualization
+    lg = log --oneline --graph --decorate --all    # Visual commit graph
+    last = log -1 HEAD                             # Show last commit
+    # lol = log --graph --decorate --pretty=oneline --abbrev-commit --all
+    # hist = log --pretty=format:'%h %ad | %s%d [%an]' --graph --date=short
+
+    # Staging and unstaging
+    unstage = reset HEAD --                        # Unstage files
+    # stage = add                                  # Alternative to 'git add'
+
+    # Branch management
+    # cleanup = "!git branch --merged | grep -v '\\*\\|main\\|master' | xargs -n 1 git branch -d"
+    # recent = branch --sort=-committerdate        # Show recent branches
+
+    # Diff aliases
+    # df = diff                                    # Show unstaged changes
+    # dfc = diff --cached                          # Show staged changes
+    # dfh = diff HEAD                              # Show all changes since last commit
+
+    # Stash management
+    # sl = stash list                              # List stashes
+    # sp = stash pop                               # Apply and remove top stash
+    # ss = stash save                              # Save current changes to stash
+
+[push]
+    # Push behavior configuration
+    # Options: simple, current, matching, upstream
+    # Impact: Determines what gets pushed when you run 'git push'
+    # When to use: 'simple' is safest (default since Git 2.0)
+    default = simple
+    # default = current     # Push current branch to branch of same name
+    # default = upstream    # Push to configured upstream branch
+
+    # Automatically set upstream on push
+    # Impact: Sets up tracking branch automatically
+    # When to enable: Saves typing '--set-upstream' for new branches
+    # autoSetupRemote = true
+
+[pull]
+    # Pull strategy configuration - IMPORTANT for team workflow
+    # Options: true, false, only
+    # Impact: How Git handles merges vs rebases when pulling
+    # When to use: false=merge (preserves history), true=rebase (cleaner history)
+    rebase = false
+    # rebase = true         # Rebase local commits on top of pulled commits (cleaner history)
+    # rebase = interactive  # Interactive rebase for more control
+
+    # Fast-forward only pulls
+    # Impact: Only allows pulls that don't create merge commits
+    # When to enable: Teams that want linear history
+    # ff = only
+
+[init]
+    # Default branch name for new repositories
+    # Impact: Name of initial branch (was 'master', now typically 'main')
+    # When to set: Modern repositories use 'main', legacy may use 'master'
+    defaultBranch = develop
+    # defaultBranch = master  # If working with legacy systems
+
+[pager]
+    # Per-command pager configuration
+    # Impact: Override global pager setting for specific commands
+    # When to use: When you want different paging behavior for different commands
+    branch = cat              # 'git branch' shows output directly (no paging)
+    # status = cat            # 'git status' shows output directly
+    # tag = cat               # 'git tag' shows output directly
+
+[merge]
+    # Merge tool configuration
+    # Impact: Which tool opens for resolving merge conflicts
+    # When to set: If you prefer specific merge conflict resolution tools
+    # tool = vscode
+    # tool = vimdiff
+    # tool = meld
+
+    # Merge strategy
+    # Impact: How Git handles automatic merges
+    # When to enable: For specific merge behaviors
+    # ff = false            # Always create merge commit (no fast-forward)
+    # conflictstyle = diff3 # Show common ancestor in conflict markers
+
+[diff]
+    # Diff algorithm and display options
+    # Impact: How Git calculates and shows differences
+    # When to enable: For better diff quality or external diff tools
+    # algorithm = histogram  # Better diff algorithm (vs default 'myers')
+    # tool = vscode         # External diff tool
+    # colorMoved = default  # Highlight moved code blocks
+
+[color]
+    # Global color configuration
+    # Impact: Enables colored output in Git commands
+    # When to disable: Terminal doesn't support colors or for scripts
+    ui = auto              # Auto-detect color support
+    # ui = true            # Always use colors
+    # ui = false           # Never use colors
+
+[color "branch"]
+    # Branch command colors
+    # Impact: Visual distinction between local/remote/current branches
+    # When to customize: Personal preference for branch listing colors
+    current = yellow reverse    # Highlight current branch
+    local = yellow             # Local branches
+    remote = green             # Remote branches
+    # upstream = cyan          # Upstream branches
+
+[color "diff"]
+    # Diff output colors
+    # Impact: Syntax highlighting for file differences
+    # When to customize: Improve readability of diffs
+    meta = yellow bold         # File headers
+    frag = magenta bold        # Hunk headers (@@)
+    old = red bold            # Removed lines
+    new = green bold          # Added lines
+    # whitespace = red reverse # Highlight whitespace errors
+
+[color "status"]
+    # Status command colors
+    # Impact: Visual coding for file states in 'git status'
+    # When to customize: Better visual parsing of repository state
+    added = yellow            # Staged files
+    changed = green           # Modified files
+    untracked = cyan          # Untracked files
+    # branch = yellow          # Current branch name
+    # nobranch = red           # Detached HEAD state
+
+# ================================
+# ADDITIONAL CONFIGURATION OPTIONS
+# ================================
+# Uncomment and configure as needed for your workflow
+
+# [credential]
+    # Credential storage for HTTPS remotes
+    # Impact: Avoids repeated password prompts
+    # When to enable: Using HTTPS remotes, not SSH keys
+    # helper = store        # Store credentials in plain text (less secure)
+    # helper = cache        # Cache credentials in memory temporarily
+    # helper = osxkeychain  # macOS Keychain integration (recommended for Mac)
+    # helper = manager      # Git Credential Manager (Windows/cross-platform)
+
+# [commit]
+    # Commit behavior
+    # Impact: Automatic GPG signing, commit templates
+    # When to enable: Security requirements, standardized commit messages
+    # gpgsign = true        # Always sign commits with GPG
+    # template = ~/.gitmessage  # Commit message template
+
+# [tag]
+    # Tag signing
+    # Impact: Cryptographic verification of tags
+    # When to enable: Release management, security requirements
+    # gpgsign = true        # Always sign tags with GPG
+
+# [fetch]
+    # Fetch behavior
+    # Impact: How Git fetches from remotes
+    # When to enable: Performance tuning, cleanup automation
+    # prune = true          # Automatically remove deleted remote branches
+    # parallel = 0          # Parallel fetch jobs (0 = auto-detect CPU cores)
+
+# [rebase]
+    # Rebase behavior
+    # Impact: How interactive rebases work
+    # When to enable: Frequent rebasing workflows
+    # autosquash = true     # Auto-squash commits marked with 'squash!' or 'fixup!'
+    # autostash = true      # Auto-stash changes before rebase
+
+# [rerere]
+    # Reuse recorded resolution (for recurring merge conflicts)
+    # Impact: Automatically resolve previously seen conflicts
+    # When to enable: Frequent rebasing with similar conflicts
+    # enabled = true
+
+# [help]
+    # Help system behavior
+    # Impact: How Git shows help and handles typos
+    # When to customize: Faster help access, typo correction
+    # autocorrect = 1       # Auto-run corrected commands after 0.1 seconds
+    # format = web          # Open help in web browser instead of terminal
+
+# [url "git@github.com:"]
+    # URL rewriting for SSH vs HTTPS
+    # Impact: Automatically use SSH for GitHub repositories
+    # When to enable: Prefer SSH over HTTPS for GitHub
+    # insteadOf = https://github.com/

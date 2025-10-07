@@ -13,6 +13,12 @@
     # editor = vim          # Vim editor
     # editor = nano         # Nano editor
 
+    # Sequence editor for interactive rebases
+    # Impact: Controls the editor used for rebase instruction editing
+    # When to set: To avoid opening editor during scripted rebases
+    # Use 'true' to skip editor entirely for automated rebases
+    # sequence.editor = true
+
     # Pager for displaying long output (log, diff, etc.)
     # Options: less, more, cat, delta, bat
     # Impact: Controls how Git displays multi-page output
@@ -228,12 +234,12 @@
     # prune = true          # Automatically remove deleted remote branches
     # parallel = 0          # Parallel fetch jobs (0 = auto-detect CPU cores)
 
-# [rebase]
+[rebase]
     # Rebase behavior
     # Impact: How interactive rebases work
     # When to enable: Frequent rebasing workflows
-    # autosquash = true     # Auto-squash commits marked with 'squash!' or 'fixup!'
-    # autostash = true      # Auto-stash changes before rebase
+    autosquash = true     # Auto-squash commits marked with 'squash!' or 'fixup!'
+    autostash = true      # Auto-stash changes before rebase
 
 # [rerere]
     # Reuse recorded resolution (for recurring merge conflicts)
@@ -247,6 +253,13 @@
     # When to customize: Faster help access, typo correction
     # autocorrect = 1       # Auto-run corrected commands after 0.1 seconds
     # format = web          # Open help in web browser instead of terminal
+
+# [sequence]
+    # Interactive rebase sequence editor
+    # Impact: Controls editor for rebase instruction files
+    # When to enable: For automated scripts that handle rebases
+    # editor = true         # Skip editor entirely (for scripted rebases)
+    # editor = sed -i ''    # Use sed for automated instruction editing
 
 # [url "git@github.com:"]
     # URL rewriting for SSH vs HTTPS

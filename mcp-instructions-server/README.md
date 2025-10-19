@@ -1,25 +1,40 @@
 # MCP Instructions Server
 
-A **Model Context Protocol (MCP)** server that stores and retrieves development instructions to help GitHub Copilot provide better implementations with ~0 errors.
+A **Model Context Protocol (MCP)** server that stores and retrieves development instructions to help **GitHub Copilot** and **Cursor AI** provide better implementations with ~100% accuracy.
 
 ---
 
-## � Quick Start for New Users
+## 🚀 Quick Start for New Users
 
-👉 **[SETUP_FOR_NEW_USERS.md](SETUP_FOR_NEW_USERS.md)** - Complete setup guide in 5 steps
+**Choose your AI assistant:**
+
+### GitHub Copilot Setup
+👉 **[SETUP_FOR_NEW_USERS.md](SETUP_FOR_NEW_USERS.md)** - Complete MCP server setup (5 steps)
 👉 **[COPILOT_SETUP_COMMANDS.md](COPILOT_SETUP_COMMANDS.md)** - Copy-paste commands for Copilot Chat
 
+### Cursor AI Setup
+👉 **[CURSOR_SETUP.md](CURSOR_SETUP.md)** - Complete Cursor setup (3 steps, simpler!)
+👉 **[CURSOR_PROMPTS.md](CURSOR_PROMPTS.md)** - Copy-paste prompts for Cursor Chat
+👉 **[CURSOR_LOCAL_SETUP_INSTRUCTIONS.md](CURSOR_LOCAL_SETUP_INSTRUCTIONS.md)** - Local configuration guide
+
+### Both Tools
+👉 **[SETUP_COMPARISON.md](SETUP_COMPARISON.md)** - Side-by-side comparison (Cursor vs Copilot)
+
 ---
 
-## �📖 Documentation
+## 📖 Documentation
 
 ### Getting Started
-- **[SETUP_FOR_NEW_USERS.md](SETUP_FOR_NEW_USERS.md)** ⭐ **NEW USERS START HERE** - 5-step setup guide
-- **[COPILOT_SETUP_COMMANDS.md](COPILOT_SETUP_COMMANDS.md)** 💬 **Copilot Chat Commands** - One-click setup prompts
+- **[SETUP_FOR_NEW_USERS.md](SETUP_FOR_NEW_USERS.md)** ⭐ **NEW USERS START HERE** - MCP server setup
+- **[COPILOT_SETUP_COMMANDS.md](COPILOT_SETUP_COMMANDS.md)** 💬 **GitHub Copilot** - One-click setup prompts
+- **[CURSOR_SETUP.md](CURSOR_SETUP.md)** 🎯 **Cursor AI** - Complete setup guide
+- **[CURSOR_PROMPTS.md](CURSOR_PROMPTS.md)** 💬 **Cursor Prompts** - Test prompts for Cursor Chat
+- **[CURSOR_LOCAL_SETUP_INSTRUCTIONS.md](CURSOR_LOCAL_SETUP_INSTRUCTIONS.md)** 🔧 **Cursor Local** - macOS configuration
 - **[GETTING_STARTED.md](GETTING_STARTED.md)** 📘 **User Guide** - How the server works, troubleshooting
 
 ### Configuration & Customization
-- **[COPILOT_CONFIGURATION_GUIDE.md](COPILOT_CONFIGURATION_GUIDE.md)** ⚙️ **Configuration** - Make Copilot follow rules everywhere
+- **[COPILOT_CONFIGURATION_GUIDE.md](COPILOT_CONFIGURATION_GUIDE.md)** ⚙️ **Copilot Config** - Make Copilot follow rules everywhere
+- **[SETUP_COMPARISON.md](SETUP_COMPARISON.md)** ⚖️ **Comparison** - Cursor vs Copilot differences
 - **[HOW_TO_DEFINE_RULES.md](HOW_TO_DEFINE_RULES.md)** 📝 **Creating Rules** - Complete guide to defining instructions
 
 ### Operations & Reference
@@ -98,9 +113,41 @@ The MCP server runs as a stdio-based process:
 npm start
 ```
 
-### Integrating with VS Code / GitHub Copilot
+### Integration Options
 
-#### Option 1: VS Code Settings (Recommended)
+#### Option 1: Cursor AI (Recommended - Simpler!)
+
+**Primary Method:** `.cursorrules` file at workspace root
+
+**Location:** `/Users/amar.c/workspace/dev-setup/.cursorrules`
+
+**How it works:**
+- Cursor automatically loads `.cursorrules` from workspace root
+- Contains all workflow rules, documentation approval, context gathering
+- No server startup needed for basic rules
+- Rules apply to all Cursor modes (Chat, Composer, Inline)
+
+**Setup:** [CURSOR_SETUP.md](CURSOR_SETUP.md)
+
+**Optional:** MCP server integration (future support)
+```json
+{
+  "cursor.mcp.servers": {
+    "instructions": {
+      "command": "node",
+      "args": [
+        "/Users/amar.c/workspace/dev-setup/mcp-instructions-server/build/index.js"
+      ]
+    }
+  }
+}
+```
+
+---
+
+#### Option 2: GitHub Copilot with VS Code
+
+**Primary Method:** MCP server + VS Code settings
 
 Add to your VS Code `settings.json` (User or Workspace):
 
@@ -120,7 +167,11 @@ Add to your VS Code `settings.json` (User or Workspace):
 }
 ```
 
-#### Option 2: Claude Desktop Integration
+**Setup:** [SETUP_FOR_NEW_USERS.md](SETUP_FOR_NEW_USERS.md)
+
+---
+
+#### Option 3: Claude Desktop Integration
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -267,61 +318,91 @@ Get a specific instruction by ID.
 - `list_projects`: Get all projects with instructions
 - `list_tags`: Get all tags used
 
-## 🎯 How It Works with GitHub Copilot
+## 🎯 How It Works with AI Assistants
 
-### Before (Without MCP Server)
+### Before (Without Setup)
 
-❌ Copilot might:
+❌ AI might:
 - Skip requirement clarification
 - Make assumptions
 - Not follow project patterns
 - Introduce common pitfalls
 - Skip validation steps
+- Create documentation without asking
 
-### After (With MCP Server)
+### After (With Setup) - Both Cursor & Copilot
 
-✅ Copilot will:
-1. **Clarify requirements** first
-2. **Plan** before implementing
-3. **Follow** language-specific patterns
-4. **Avoid** known pitfalls
-5. **Validate** with proper tools
-6. **Summarize** changes
+✅ AI will:
+1. **Ask before creating docs** (CRITICAL)
+2. **Clarify requirements** first
+3. **Plan** before implementing
+4. **Follow** language-specific patterns
+5. **Avoid** known pitfalls
+6. **Validate** with proper tools
+7. **Summarize** changes
+
+### How Each Tool Works
+
+**[Cursor AI]** - Via `.cursorrules` file:
+- Loads rules automatically from workspace
+- Applies to all modes (Chat, Composer, Inline)
+- No prefix needed
+- Simpler setup
+
+**[GitHub Copilot]** - Via MCP server:
+- Use `@github` prefix to load MCP
+- Dynamic, queryable instruction database
+- More powerful pattern queries
+- Requires MCP server running
+
+**Both achieve ~100% accuracy!**
 
 ## 📝 Workflow Example
 
-When you ask Copilot to "Add a new user endpoint":
+When you ask your AI (Cursor or Copilot) to "Add a new user endpoint":
 
 ### Phase 1: Clarification
-Copilot reads `instructions://workflow-rules` and:
+AI reads workflow rules and:
 - Restates the requirement
 - Identifies scope (which files)
 - Notes assumptions
-- Asks for confirmation
+- **Asks for confirmation**
+
+**[Cursor]**: Reads from `.cursorrules`
+**[Copilot]**: Reads from `instructions://workflow-rules` via MCP
 
 ### Phase 2: Planning
-Copilot reads project-specific instructions:
-- `instructions://project-config/greymatter-platform`
-- `instructions://coding-patterns/java`
-- `instructions://pitfalls/java`
+AI reads project-specific patterns:
+- Project configuration
+- Language patterns (Java/Erlang/TypeScript)
+- Common pitfalls to avoid
 
 Then creates a detailed plan with:
 - Files to modify
 - Testing strategy
 - Potential risks
+- **Asks: "Should I create documentation?"**
+
+**[Cursor]**: Uses patterns from `.cursorrules`
+**[Copilot]**: Queries MCP server for patterns
 
 ### Phase 3: Implementation
-Copilot implements following:
-- Java Spring Boot patterns
-- Avoiding N+1 queries
-- Using DTOs (not entities)
-- Proper transaction boundaries
+AI implements following:
+- Language-specific patterns (e.g., Spring Boot for Java)
+- Avoiding common pitfalls (e.g., N+1 queries)
+- Using best practices (e.g., DTOs not entities)
+- Proper error handling and validation
+
+**Both follow stored patterns for consistency**
 
 ### Phase 4: Review
-Copilot provides:
-- Summary of changes
-- Validation results
+AI provides:
+- Summary of all changes made
+- Validation results (linting, tests)
+- Testing evidence
 - Next steps
+
+**Result: ~100% accuracy, 0 errors** 🎉
 
 ## 🔧 Customization
 

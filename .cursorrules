@@ -1,0 +1,254 @@
+# Cursor AI Rules
+
+## 🚨 CRITICAL RULES - ALWAYS FOLLOW
+
+### Documentation Approval Required (PRIORITY: CRITICAL)
+
+**NEVER create any documentation files without explicit user approval.**
+
+This applies to:
+- README files
+- Architecture documentation
+- API documentation
+- Design documents
+- How-to guides
+- Migration guides
+- Any markdown (.md) files
+- Wiki pages
+
+#### Rules:
+
+1. **Always Ask First**
+   ```
+   "Should I create documentation for this?"
+   "Do you want me to add a README?"
+   "Would you like documentation for this feature?"
+   ```
+
+2. **Wait for Explicit Approval**
+   - Don't assume documentation is needed
+   - Don't create docs "just in case"
+   - User must explicitly say "yes" or "create it"
+
+3. **Exceptions (Still Add Value)**
+   You MAY add without asking:
+   - Inline code comments (< 10 lines)
+   - Function/method docstrings
+   - Type annotations
+   - Brief commit messages
+
+#### Example Interactions:
+
+**❌ WRONG:**
+```
+User: "Create a new utility module"
+AI: [Creates code + README.md without asking]
+```
+
+**✅ CORRECT:**
+```
+User: "Create a new utility module"
+AI: "I'll create the utility module. Should I also create documentation for it?"
+User: "No, just the code"
+AI: [Creates only code]
+```
+
+---
+
+## 📋 4-Phase Workflow (PRIORITY: HIGH)
+
+When implementing features, always follow this workflow:
+
+### Phase 1: Requirement Clarification
+- Restate the requirement in your own words
+- Identify scope and affected components
+- List assumptions
+- Ask clarifying questions
+- **Wait for confirmation before proceeding**
+
+### Phase 2: Planning
+- Gather context from existing code
+- Create detailed implementation plan
+- List files to create/modify
+- Define testing strategy
+- Identify risks
+- **Ask about documentation needs**
+- **Get approval before implementation**
+
+### Phase 3: Implementation
+- Follow the approved plan
+- Apply language-specific patterns
+- Validate continuously (format, type-check, test)
+- Use incremental approach for complex changes
+- Document as you go (with approval for docs!)
+
+### Phase 4: Review and Summary
+- Summarize all changes made
+- Report validation results (linting, tests)
+- Provide testing evidence
+- List next steps
+- Ask if user wants to proceed with next task
+
+---
+
+## 🔍 Context Gathering (PRIORITY: HIGH)
+
+**NEVER make changes without understanding the codebase.**
+
+Before implementing:
+1. Read existing similar implementations
+2. Check for README files and inline documentation
+3. Query the MCP Instructions Server (when available)
+4. Understand dependencies and patterns
+5. Check for type definitions and interfaces
+6. Review test files for expected behavior
+
+---
+
+## 🎯 Cursor-Specific Best Practices
+
+### Multi-Tab Context Management
+- Track multiple files across tabs efficiently
+- Maintain awareness of related components
+- Reference cross-file dependencies explicitly
+- Use @filepath.ts notation when referencing other files
+
+### Composer Mode (CMD+I / Multi-File Edits)
+- Break complex features into manageable file changes
+- Show all files that will be modified upfront
+- Maintain consistency across related files
+- Still follow 4-phase workflow even in Composer
+
+### Inline Edits (CMD+K)
+- For small, focused changes only
+- Still ask about documentation if creating new files
+- Explain the change being made
+- Preserve existing code style and patterns
+
+### Chat Mode Best Practices
+- Use for exploration and understanding
+- Reference specific files with @filename
+- Ask clarifying questions before suggesting changes
+- Provide code examples with explanations
+
+### Prompt Engineering for Cursor
+- Be specific about file locations
+- Break large tasks into smaller chunks
+- Use "show me", "explain", "implement" clearly
+- Reference the .cursorrules explicitly when needed
+
+---
+
+## 🎯 Project Context
+
+This is the **MCP Instructions Server** project:
+
+**Tech Stack:**
+- TypeScript
+- Node.js
+- SQLite with FTS5
+- Model Context Protocol (MCP)
+
+**Purpose:**
+- Stores development instructions for AI assistants
+- Provides workflow rules, coding patterns, and pitfalls
+- Supports context-aware instruction retrieval
+
+**Key Files:**
+- `src/index.ts` - MCP server entry point
+- `src/db.ts` - Database layer
+- `src/resources.ts` - MCP resources (8 resources)
+- `src/tools.ts` - MCP tools (9 tools)
+- `instructions/*.json` - Instruction seed data
+
+**Commands:**
+- `npm run build` - Build TypeScript
+- `npm run seed` - Seed database
+- `npm test` - Run tests
+
+**Development Workflow:**
+1. Make changes to TypeScript files
+2. Run `npm run build` to compile
+3. Test changes with `npm test`
+4. For instruction changes: `rm instructions.db && npm run seed`
+
+---
+
+## 💡 General Guidelines
+
+### When Responding
+- **Always check:** Does this response create documentation?
+- **If yes:** Ask for approval first
+- **If no:** Proceed normally
+
+### Code Quality Standards
+- Follow existing code patterns in the project
+- Add type annotations for TypeScript
+- Include error handling
+- Write clear, descriptive variable names
+- Keep functions small and focused
+
+### Testing Requirements
+- Add tests for new functionality
+- Update existing tests when modifying code
+- Verify tests pass before marking task complete
+- Consider edge cases and error scenarios
+
+### Communication Style
+- Be concise but complete
+- Use code blocks with proper syntax highlighting
+- Show file paths for all code changes
+- Explain WHY, not just WHAT
+
+---
+
+## 🔄 Workflow Variations by Mode
+
+### Chat Mode
+1. Clarify requirements
+2. Explain approach
+3. Ask for approval
+4. Provide code examples
+5. Summarize next steps
+
+### Composer Mode (Multi-File)
+1. Clarify scope of all files involved
+2. Plan changes across all files
+3. Ask about documentation
+4. Get approval for multi-file changes
+5. Implement consistently across files
+6. Summarize all changes
+
+### Inline Edit Mode
+1. Understand context of the specific edit
+2. Propose focused change
+3. Apply and explain
+4. Minimal disruption to surrounding code
+
+---
+
+## 🚀 Integration with MCP Server
+
+When MCP Instructions Server is available:
+- Reference language-specific patterns (Erlang, Java, TypeScript)
+- Check for common pitfalls before implementing
+- Follow project-specific conventions (Butler Server, GreyMatter Platform)
+- Use stored workflow rules as additional guidance
+
+To query MCP server: "What patterns should I follow for [language/project]?"
+
+---
+
+## 📝 Reminder
+
+**These rules apply to ALL Cursor interactions:**
+- ✅ Chat responses
+- ✅ Composer multi-file edits
+- ✅ Inline code edits (CMD+K)
+- ✅ All suggestions and completions
+
+**If user says "Follow .cursorrules":**
+- Re-read these rules
+- Apply 4-phase workflow strictly
+- Double-check documentation approval rule
+- Proceed with heightened attention to guidelines

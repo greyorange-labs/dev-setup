@@ -140,6 +140,7 @@
     branch = cat              # 'git branch' shows output directly (no paging)
     # status = cat            # 'git status' shows output directly
     # tag = cat               # 'git tag' shows output directly
+    diff = cat               # 'git diff' shows output directly
 
 [merge]
     # Merge tool configuration

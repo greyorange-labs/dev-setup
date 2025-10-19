@@ -104,8 +104,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 ## ------------------------------------------------------------------------------------------------##
-$HOMEBREW_NO_AUTO_UPDATE=1
-
+HOMEBREW_NO_AUTO_UPDATE=1
 export PATH="/opt/homebrew/opt/findutils/libexec/gnubin:$PATH"
 export PATH="/opt/homebrew/opt/gnu-tar/libexec/gnubin:$PATH"
 export PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"
@@ -156,8 +155,14 @@ alias d='git checkout develop'
 alias gpl='git pull'
 alias dcsc='git update-index --skip-worktree priv/sys.local.config'
 alias gsqs='/Users/amar.c/workspace/dev-setup/git/git-squash.sh'
+alias mcom='git log --author amar'
+alias chp='git cherry-pick'
 
 
 ### ALIASES-DOCKER
 alias dpg='docker exec -it postgres psql butler_dev -U postgres'
 alias din='docker exec -it influxdb influx'
+
+### SSH
+alias pt='command ssh greyuser@192.168.9.230'
+alias jump='command ssh amar.c@192.168.9.237'

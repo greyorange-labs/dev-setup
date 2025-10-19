@@ -1,0 +1,34 @@
+{
+    "name": "mcp-instructions-server",
+    "version": "1.0.0",
+    "description": "Model Context Protocol server for storing and retrieving development instructions to help GitHub Copilot provide better implementations",
+    "type": "module",
+    "main": "build/index.js",
+    "scripts": {
+        "build": "tsc",
+        "watch": "tsc --watch",
+        "prepare": "npm run build",
+        "start": "node build/index.js",
+        "seed": "node build/seed.js",
+        "dev": "tsc && node build/index.js"
+    },
+    "keywords": [
+        "mcp",
+        "model-context-protocol",
+        "github-copilot",
+        "development-instructions",
+        "code-patterns"
+    ],
+    "author": "amarBitMan",
+    "license": "MIT",
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^0.5.0",
+        "better-sqlite3": "^11.0.0",
+        "zod": "^3.23.0"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "^7.6.11",
+        "@types/node": "^22.0.0",
+        "typescript": "^5.5.0"
+    }
+}

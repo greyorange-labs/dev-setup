@@ -1,0 +1,805 @@
+h1. Erlang Memory Troubleshooting Guide: High Memory Usage & OOM Issues
+
+{toc:printable=true|style=circle|maxLevel=3|indent=20px|minLevel=2|class=bigpink|exclude=[1//2]|type=list|outline=false|include=.*}
+
+----
+
+h2. Introduction
+
+This guide helps you investigate and resolve high memory usage and Out-of-Memory (OOM) issues in Erlang applications using Grafana monitoring dashboards. The dashboard provides visibility into Erlang system memory, process memory, ETS tables, and Erlang message queues.
+
+h3. When to Use This Guide
+* Application experiencing OOM crashes
+* Gradual memory increase over time (memory leak)
+* Unexpected memory spikes
+* Performance degradation due to high memory usage
+* Understanding your application's memory profile
+
+----
+
+h2. Understanding Erlang Memory Architecture
+
+h3. Memory Types in Erlang
+
+According to the Erlang documentation ({{erlang:memory/0}}), memory is categorized as:
+
+h4. 1. *Total Memory*
+* Sum of all dynamically allocated memory by the emulator
+* {{total = processes + system}}
+
+h4. 2. *Processes Memory*
+* Memory allocated for all Erlang processes
+* Includes: heap, stack, internal structures
+* {{processes = processes_used + ProcessesNotUsed}}
+
+h4. 3. *System Memory*
+* Memory not directly related to Erlang processes
+* Breakdown: {{system = atom + binary + code + ets + OtherSystem}}
+* Components:
+** *atom*: Atom table memory
+** *atom_used*: Actually used atom memory
+** *binary*: Reference-counted binaries (off-heap)
+** *code*: Loaded Erlang code
+** *ets*: ETS table memory
+
+h4. 4. *Process-Specific Memory Components*
+* *heap_size*: Current heap size in words
+* *stack_size*: Stack size
+* *total_heap_size*: All heap fragments including stack
+* *memory*: Total bytes allocated for the process
+* *message_queue_len*: Number of messages in queue
+* *binary*: Off-heap binaries referenced
+
+----
+
+h2. Dashboard Overview
+
+Based on the provided Grafana dashboard screenshots, you have visibility into:
+
+h3. Panel 1: Erlang System Mem Usage
+* *Total memory*: Overall system memory usage
+* *ETS memory*: Memory used by ETS tables
+* *Process memory (Allocated)*: Memory allocated to processes
+* *Process memory (Used)*: Actually used process memory
+* *Binary memory*: Off-heap binary memory
+
+h3. Panel 2: Erlang Processes MsgQ Usage
+* Tracks message queue depths across different processes
+* Multiple ranks showing top message queue consumers
+
+h3. Panel 3: Erlang System Count
+* Process count over time
+* Thread count
+
+h3. Panel 4: Memory Usage \[Rank-N\]
+* Top N processes by memory consumption
+* Process name and memory usage breakdown
+
+h3. Panel 5: MessageQ \[Rank-N\]
+* Top N processes by message queue length
+* Process name and message count
+
+h3. Panel 6: Erlang ETS Mem Usage
+* Individual ETS table memory consumption
+* Ranks showing largest ETS tables
+
+h3. Panel 7: Erlang ETS Item Count
+* Number of items per ETS table
+* Helps identify tables growing unbounded
+
+----
+
+h2. Memory Analysis Using the Dashboard
+
+h3. 1. Identify Memory Growth Pattern
+
+h4. Gradual Increase (Memory Leak)
+*Symptoms:*
+* Steady upward trend in "Total memory" graph
+* Memory doesn't decrease during low-traffic periods
+* Eventually leads to OOM
+
+*What to Check:*
+* Are processes accumulating data indefinitely?
+* Are ETS tables growing unbounded?
+* Are binaries being held in process memory?
+
+h4. Sudden Spike (Load-Related)
+*Symptoms:*
+* Sharp increase correlated with traffic
+* Memory returns to baseline after load decreases
+* May still cause OOM during peak
+
+*What to Check:*
+* Is the system properly handling backpressure?
+* Are message queues growing excessively?
+* Is garbage collection keeping up?
+
+h3. 2. Analyze Memory Components
+
+h4. High Process Memory
+*From Dashboard:* "Process memory (Allocated)" significantly higher than other components
+
+*Possible Causes:*
+# *Large Message Queues*
+** Check "Erlang Processes MsgQ Usage" panel
+** Identify processes with thousands+ messages
+** Cross-reference with "MessageQ \[Rank-N\]" panel
+# *Process Heap Bloat*
+** Check "Memory Usage \[Rank-N\]" panel
+** Identify processes consuming excessive memory
+** May indicate processes holding large data structures
+# *Too Many Processes*
+** Check "Erlang System Count" panel
+** Compare against expected process count
+** Each process costs ~327 words (2616 bytes minimum)
+
+*Investigation:*
+{code:erlang}
+%% Get top memory-consuming processes
+recon:proc_count(memory, 10).
+
+%% Get detailed process info
+process_info(Pid, [memory, heap_size, total_heap_size,
+                   message_queue_len, binary]).
+{code}
+
+h4. High ETS Memory
+*From Dashboard:* "ETS memory" line showing significant consumption
+
+*Possible Causes:*
+# *Unbounded Table Growth*
+** Check "Erlang ETS Item Count" panel
+** Identify tables with millions of entries
+** No cleanup/expiration policy
+# *Large Objects in Tables*
+** Small item count but high memory usage
+** Tables storing large binaries or complex terms
+
+*Investigation:*
+{code:erlang}
+%% List all ETS tables with sizes
+[{T, ets:info(T, name), ets:info(T, size),
+  ets:info(T, memory)} || T <- ets:all()].
+
+%% Inspect specific table
+ets:info(TableName).
+{code}
+
+h4. High Binary Memory
+*From Dashboard:* "Binary memory" line elevated
+
+*Possible Causes:*
+# *Reference-Counted Binaries Accumulating*
+** Off-heap binaries (>64 bytes) held by processes
+** Not garbage collected until process GC runs
+# *Binary Memory Leaks*
+** Binaries referenced but not used
+** Check process binary references
+
+*Investigation:*
+{code:erlang}
+%% Check binary memory per process
+recon:proc_count(binary_memory, 10).
+
+%% Get binary info for a process
+process_info(Pid, binary).
+{code}
+
+h3. 3. Message Queue Analysis
+
+*From Dashboard:* "Erlang Processes MsgQ Usage" and "MessageQ \[Rank-N\]" panels
+
+*Red Flags:*
+* Message queues consistently above 1000 messages
+* Queues growing over time without reduction
+* Specific processes acting as bottlenecks
+
+*Implications:*
+* Processes can't keep up with incoming messages
+* Messages may be stored on heap or off-heap based on {{message_queue_data}} flag
+* Can cause significant memory pressure
+
+*Investigation:*
+{code:erlang}
+%% Find processes with large message queues
+recon:proc_count(message_queue_len, 10).
+
+%% Check message queue data setting
+process_info(Pid, message_queue_data).
+{code}
+
+----
+
+h2. Common Causes of OOM Issues
+
+h3. 1. Unbounded Message Queues
+
+*Description:*
+Processes receiving messages faster than they can process them. According to Erlang docs, messages are copied between processes (except refc binaries and literals on the same node).
+
+*Root Causes:*
+* No backpressure mechanism
+* Slow message processing (blocking operations)
+* External system slowdowns
+
+*Detection:*
+* "MessageQ \[Rank-N\]" panel shows specific processes
+* Message queue length continuously increasing
+
+*Solution:*
+* Implement backpressure (gen_server timeouts, rate limiting)
+* Set {{message_queue_data}} to {{off_heap}} for processes with large queues
+* Use process pool to distribute load
+* Add monitoring and alerts for queue depth
+
+{code:erlang}
+%% Set message_queue_data flag
+process_flag(message_queue_data, off_heap).
+{code}
+
+h3. 2. Process Heap Bloat
+
+*Description:*
+Processes accumulating large amounts of data in their heap. From Erlang docs: default minimum heap size is 233 words, but heaps grow as needed.
+
+*Root Causes:*
+* Accumulating data in process state without cleanup
+* Large receive buffers
+* Inefficient data structures
+* Not triggering garbage collection
+
+*Detection:*
+* "Memory Usage \[Rank-N\]" shows specific processes with high memory
+* Check {{heap_size}}, {{total_heap_size}} for processes
+
+*Solution:*
+{code:erlang}
+%% Force garbage collection
+erlang:garbage_collect(Pid).
+
+%% Set max_heap_size limit (kills process if exceeded)
+spawn_opt(Fun, [{max_heap_size, #{size => 10000000,
+                                   kill => true,
+                                   error_logger => true}}]).
+
+%% Use hibernate to compact heap
+erlang:hibernate(Module, Function, Args).
+{code}
+
+h3. 3. ETS Table Growth
+
+*Description:*
+ETS tables growing unbounded without cleanup policies.
+
+*Root Causes:*
+* No TTL or expiration mechanism
+* Missing delete operations
+* Accumulating historical data
+* Table type mismatch (set vs bag vs duplicate_bag)
+
+*Detection:*
+* "Erlang ETS Mem Usage" and "Erlang ETS Item Count" panels
+* Tables with millions of entries
+
+*Solution:*
+* Implement periodic cleanup
+* Use {{ets:select_delete/2}} for bulk deletion
+* Consider using a time-series database for historical data
+* Use {{write_concurrency}} and {{read_concurrency}} appropriately
+
+{code:erlang}
+%% Delete old entries
+Now = erlang:system_time(second),
+ets:select_delete(Table, [{{'$1', '$2'},
+                           [{'<', '$2', Now - 3600}],
+                           [true]}]).
+
+%% Set table limits (fails inserts when full)
+ets:new(my_table, [named_table, set,
+                   {heir, whereis(supervisor), []},
+                   {max_size, 1000000}]).
+{code}
+
+h3. 4. Binary Memory Accumulation
+
+*Description:*
+Large binaries (>64 bytes) stored as reference-counted binaries in separate area. Not garbage collected until process GC runs.
+
+*Root Causes:*
+* Processes holding references to large binaries
+* Infrequent garbage collection
+* Binary data passed between processes
+* {{include_shared_binaries}} in max_heap_size
+
+*Detection:*
+* "Binary memory" line in dashboard elevated
+* Process binary field showing large values
+
+*Solution:*
+{code:erlang}
+%% Trigger GC to release binaries
+erlang:garbage_collect(Pid).
+
+%% Set binary vheap sizing
+spawn_opt(Fun, [{min_bin_vheap_size, 46422}]).
+
+%% Consider binary data lifecycle
+%% Use binary:copy/1 for small parts of large binaries
+SmallPart = binary:copy(binary:part(LargeBinary, 0, 10)).
+{code}
+
+h3. 5. Atom Table Exhaustion
+
+*Description:*
+Atoms are never garbage collected. Dynamic atom creation can fill atom table (default limit ~1M atoms).
+
+*Root Causes:*
+* Converting untrusted input to atoms
+* Dynamic atom generation
+* {{binary_to_atom/2}} instead of {{binary_to_existing_atom/2}}
+
+*Detection:*
+* Check atom_count vs atom_limit
+{code:erlang}
+erlang:system_info(atom_count).
+erlang:system_info(atom_limit).
+{code}
+
+*Solution:*
+* Use {{binary_to_existing_atom/2}}
+* Use binaries or strings for dynamic data
+* Increase atom limit with {{+t}} flag (not recommended)
+
+h3. 6. Code and Literal Pool Issues
+
+*Description:*
+From Erlang docs: Each loaded module has a literal pool. Default 1GB virtual address space reserved for all literal pools.
+
+*Root Causes:*
+* Too many loaded modules
+* Hot code loading without purging old code
+* Large literal data in modules
+
+*Detection:*
+{code:erlang}
+erlang:memory(code).
+erlang:system_info(loaded).
+{code}
+
+*Solution:*
+* Purge old code versions
+* Increase literal pool size: {{erl +MIscs 2048}}
+* Reduce literal data in code
+
+h3. 7. Too Many Processes
+
+*Description:*
+Each process has minimum overhead of ~327 words (2616 bytes).
+
+*Root Causes:*
+* Process leaks (not properly terminated)
+* Creating processes per connection without pooling
+* No process limits
+
+*Detection:*
+* "Erlang System Count" panel showing high process count
+{code:erlang}
+erlang:system_info(process_count).
+erlang:system_info(process_limit).
+{code}
+
+*Solution:*
+* Implement process pools
+* Set process limits: {{erl +P 500000}}
+* Ensure proper process cleanup
+* Use supervisors with restart strategies
+
+----
+
+h2. Step-by-Step Troubleshooting Process
+
+h3. Step 1: Confirm High Memory Usage
+
+*1. Check Dashboard*
+* Look at "Erlang System Mem Usage" panel
+* Note current memory usage and trends
+* Compare to historical baseline
+
+*2. Verify with Erlang Commands*
+{code:erlang}
+%% Total memory in bytes
+erlang:memory(total).
+
+%% Breakdown
+erlang:memory().
+{code}
+
+h3. Step 2: Identify Primary Memory Consumer
+
+*1. Check Dashboard Panels*
+* Which line is highest in "Erlang System Mem Usage"?
+* Process memory → Process issue
+* ETS memory → ETS table issue
+* Binary memory → Binary data issue
+
+*2. Get Detailed Breakdown*
+{code:erlang}
+%% Memory breakdown
+[{Type, erlang:memory(Type)} || Type <-
+ [total, processes, system, atom, binary, code, ets]].
+{code}
+
+h3. Step 3: Deep Dive Based on Type
+
+h4. If Process Memory is High:
+
+*1. Check Message Queues*
+* Review "MessageQ \[Rank-N\]" panel
+* Identify processes with large queues
+{code:erlang}
+recon:proc_count(message_queue_len, 20).
+{code}
+
+*2. Check Process Memory*
+* Review "Memory Usage \[Rank-N\]" panel
+* Identify memory-heavy processes
+{code:erlang}
+recon:proc_count(memory, 20).
+{code}
+
+*3. Inspect Specific Processes*
+{code:erlang}
+Pid = pid(0, 123, 0). % From dashboard or recon
+
+%% Comprehensive info
+process_info(Pid).
+
+%% Specific fields
+process_info(Pid, [registered_name,
+                   current_function,
+                   memory,
+                   heap_size,
+                   total_heap_size,
+                   stack_size,
+                   message_queue_len,
+                   messages,
+                   dictionary,
+                   binary]).
+{code}
+
+*4. Check Process Backtrace*
+{code:erlang}
+%% See what process is doing
+erlang:process_display(Pid, backtrace).
+
+%% Or get as binary
+{backtrace, Bin} = process_info(Pid, backtrace).
+io:format("~s", [Bin]).
+{code}
+
+h4. If ETS Memory is High:
+
+*1. Review Dashboard*
+* Check "Erlang ETS Mem Usage" panel
+* Check "Erlang ETS Item Count" panel
+
+*2. List All ETS Tables*
+{code:erlang}
+%% Get all tables sorted by memory
+Tables = [{ets:info(T, name),
+           ets:info(T, size),
+           ets:info(T, memory),
+           ets:info(T, type)} || T <- ets:all()],
+lists:sort(fun({_, _, M1, _}, {_, _, M2, _}) -> M1 > M2 end, Tables).
+{code}
+
+*3. Inspect Problematic Table*
+{code:erlang}
+TableName = my_table, % From above
+
+%% Table info
+ets:info(TableName).
+
+%% Sample some entries
+ets:tab2list(TableName) |> lists:sublist(10).
+
+%% Check for large objects
+[begin
+    Size = erts_debug:flat_size(Obj),
+    {Key, Size}
+end || Obj = {Key, _} <- ets:tab2list(TableName),
+       erts_debug:flat_size(Obj) > 1000].
+{code}
+
+h4. If Binary Memory is High:
+
+*1. Find Processes with Large Binary Refs*
+{code:erlang}
+recon:proc_count(binary_memory, 20).
+{code}
+
+*2. Inspect Process Binaries*
+{code:erlang}
+{binary, BinInfo} = process_info(Pid, binary).
+%% Each tuple: {BinarySize, RefCount, BinaryId}
+
+%% Total binary memory for process
+lists:sum([Size || {Size, _, _} <- BinInfo]).
+{code}
+
+*3. Force Garbage Collection*
+{code:erlang}
+%% For specific process
+erlang:garbage_collect(Pid).
+
+%% System-wide (use cautiously)
+[erlang:garbage_collect(P) || P <- processes()].
+{code}
+
+h3. Step 4: Analyze Trends
+
+*1. Time-Based Analysis*
+* Is memory increasing linearly (leak)?
+* Does it spike periodically (batch processing)?
+* Does it correlate with traffic?
+
+*2. Correlation Analysis*
+* Compare memory panels with system count
+* Check if process count is growing
+* Look for message queue correlation
+
+h3. Step 5: Reproduce and Confirm
+
+*1. Isolate the Issue*
+* Can you reproduce in test environment?
+* Does issue appear under specific load?
+* Is it related to specific feature?
+
+*2. Monitor During Reproduction*
+* Watch dashboard in real-time
+* Run Erlang commands to gather data
+* Log process states before crash
+
+h3. Step 6: Implement Fix
+
+Based on identified cause, implement appropriate solution from "Common Causes" section.
+
+h3. Step 7: Verify Fix
+
+*1. Deploy and Monitor*
+* Watch dashboard for 24-48 hours
+* Ensure memory stabilizes
+* Check no new issues introduced
+
+*2. Load Testing*
+* Verify under peak load
+* Ensure memory limits respected
+* Confirm garbage collection working
+
+----
+
+h2. Useful Erlang Commands
+
+h3. Memory Inspection
+
+{code:erlang}
+%% Total memory breakdown
+erlang:memory().
+
+%% Specific type
+erlang:memory(total).
+erlang:memory(processes).
+erlang:memory(system).
+erlang:memory(binary).
+erlang:memory(ets).
+
+%% System info
+erlang:system_info(wordsize).
+erlang:system_info(process_count).
+erlang:system_info(process_limit).
+erlang:system_info(allocated_areas).
+{code}
+
+h3. Process Inspection
+
+{code:erlang}
+%% Using recon library (recommended)
+recon:proc_count(memory, 10).
+recon:proc_count(message_queue_len, 10).
+recon:proc_count(binary_memory, 10).
+recon:proc_count(reductions, 10).
+
+%% Manual inspection
+[{P, process_info(P, memory)} || P <- processes()].
+
+%% Detailed process info
+process_info(Pid).
+process_info(Pid, [memory, heap_size, total_heap_size,
+                   message_queue_len, current_function]).
+
+%% Process backtrace
+erlang:process_display(Pid, backtrace).
+{code}
+
+h3. ETS Inspection
+
+{code:erlang}
+%% List all tables
+ets:all().
+
+%% Table info
+ets:info(TableName).
+ets:info(TableName, size).
+ets:info(TableName, memory).
+
+%% All tables with stats
+[{ets:info(T, name), ets:info(T, size), ets:info(T, memory)}
+ || T <- ets:all()].
+
+%% Find large objects in table
+[{Key, erts_debug:flat_size(Value)} ||
+ {Key, Value} <- ets:tab2list(TableName)].
+{code}
+
+h3. Garbage Collection
+
+{code:erlang}
+%% Force GC on process
+erlang:garbage_collect(Pid).
+
+%% GC all processes (careful!)
+[erlang:garbage_collect(P) || P <- processes()].
+
+%% Get GC info
+erlang:system_info(garbage_collection).
+process_info(Pid, garbage_collection).
+{code}
+
+h3. Binary Inspection
+
+{code:erlang}
+%% Processes with most binary memory
+[{P, proplists:get_value(binary, process_info(P))}
+ || P <- processes(),
+    is_list(process_info(P, binary)) andalso
+    length(element(2, process_info(P, binary))) > 0].
+
+%% Specific process binaries
+process_info(Pid, binary).
+{code}
+
+h3. Diagnostic Tools
+
+{code:erlang}
+%% Recon library (install as dependency)
+recon:info(Pid).
+recon:get_state(Pid).
+recon:bin_leak(10).
+
+%% Observer (GUI tool)
+observer:start().
+
+%% System monitor
+erlang:system_monitor(self(), [{long_gc, 1000},
+                               {large_heap, 10000000}]).
+
+%% Crash dump analysis
+%% After crash, analyze crashdump file:
+%% erl -noshell -eval 'crashdump_viewer:start().'
+{code}
+
+----
+
+h2. References
+
+h3. Erlang Documentation
+# *Memory Management*
+** {{erlang:memory/0}} - Memory allocation information
+** {{erlang:system_info/1}} - System information including memory
+** {{process_info/2}} - Process-specific memory details
+# *Process Flags*
+** {{process_flag(max_heap_size, Size)}} - Heap size limits
+** {{process_flag(message_queue_data, MQD)}} - Message queue storage
+** {{process_flag(min_heap_size, Size)}} - Minimum heap size
+** {{process_flag(min_bin_vheap_size, Size)}} - Binary vheap size
+# *Garbage Collection*
+** {{erlang:garbage_collect/0,1}} - Force garbage collection
+** {{erlang:hibernate/3}} - Compact process heap
+** Efficiency Guide: Processes section
+# *Monitoring*
+** {{erlang:system_monitor/2}} - Set system monitor
+** {{erlang:statistics/1}} - Runtime statistics
+** {{observer}} application - GUI monitoring tool
+
+h3. Useful Links
+* [Erlang Efficiency Guide - Processes|https://www.erlang.org/doc/efficiency_guide/processes.html]
+* [Erlang System Limits|https://www.erlang.org/doc/efficiency_guide/system_limits.html]
+* [Memory Usage Analysis|https://www.erlang.org/doc/efficiency_guide/memory.html]
+* [Recon Library|https://github.com/ferd/recon] - Production debugging
+
+h3. Books
+* "Erlang in Anger" by Fred Hebert - Production debugging
+* "Learn You Some Erlang" - Memory management chapters
+
+h3. Tools
+* *observer*: Built-in GUI monitoring
+* *recon*: Production debugging library
+* *crashdump_viewer*: Analyze crash dumps
+* *etop*: Erlang top-like tool
+* *redbug*: Production tracing
+
+----
+
+h2. Appendix: Dashboard Query Examples
+
+If you need to create custom Grafana panels, here are useful queries:
+
+{code}
+# Total memory
+erlang_vm_memory_bytes_total{kind="total"}
+
+# Process memory
+erlang_vm_memory_bytes_total{kind="processes"}
+
+# ETS memory
+erlang_vm_memory_bytes_total{kind="ets"}
+
+# Binary memory
+erlang_vm_memory_bytes_total{kind="binary"}
+
+# Process count
+erlang_vm_process_count
+
+# Message queue lengths (top N)
+topk(10, erlang_vm_process_message_queue_len)
+
+# Memory per process (top N)
+topk(10, erlang_vm_process_memory_bytes)
+
+# ETS table sizes
+erlang_vm_ets_table_memory_words
+erlang_vm_ets_table_size
+{code}
+
+----
+
+h2. Quick Decision Tree
+
+{noformat}
+High Memory Usage Detected
+│
+├─ Check "System Mem Usage" panel
+│  │
+│  ├─ Process Memory High?
+│  │  ├─ Check Message Queues → Large queues?
+│  │  │  └─ Implement backpressure, use off_heap queues
+│  │  └─ Check Process Memory Rankings → Large heaps?
+│  │     └─ Review process logic, add cleanup, set limits
+│  │
+│  ├─ ETS Memory High?
+│  │  └─ Check ETS panels → Growing tables?
+│  │     └─ Implement cleanup, add TTL, limit table size
+│  │
+│  ├─ Binary Memory High?
+│  │  └─ Check process binary refs → Accumulating?
+│  │     └─ Force GC, review binary lifecycle
+│  │
+│  └─ System Memory High?
+│     ├─ Check atom count → Near limit?
+│     │  └─ Stop dynamic atom creation
+│     └─ Check code memory → Too many modules?
+│        └─ Purge old code, review module loading
+│
+└─ Memory Growing Over Time?
+   └─ Likely memory leak → Focus on trends
+      ├─ Identify growing component
+      ├─ Correlate with operations
+      └─ Add cleanup mechanism
+{noformat}
+
+----
+
+{panel:title=Remember|borderStyle=solid|borderColor=#ccc|titleBGColor=#F7D6C1|bgColor=#FFFFCE}
+Always test changes in a staging environment before applying to production. Use the dashboard as your primary diagnostic tool, then drill down with Erlang commands for detailed analysis.
+{panel}

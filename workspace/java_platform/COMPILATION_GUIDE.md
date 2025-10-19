@@ -1,213 +1,205 @@
 # Java Platform Compilation Guide
 
 ## Overview
-This guide documents the compilation steps and dependency order for the Greymatter Platform Java services, specifically focusing on resolving the auth service compilation issues.
+This guide documents the correct compilation approach for the Greymatter Platform Java services using Maven's reactor build system.
 
 ## Project Structure
 The platform consists of multiple microservices with complex interdependencies:
 - `wms-common` - Common utilities and shared components
-- `wms-billing` - Billing service and related modules
-- `wms-storage` - Storage service (has missing dependencies)
-- `gor-platform-utils` - Platform utilities (has missing dependencies)
-- `gor-platform-auth` - Authentication service (main target)
+- `wms-notification` - Notification service modules
+- `wms-integration` - Integration service modules
+- `wms-billing` - Billing service modules
+- `wms-storage` - Storage service modules
+- `gor-platform-auth` - Authentication service modules
+- `validation_engine` - Validation service modules
+- `api-gateway` - API Gateway service
+- And many more...
 
-## Compilation Order
+## Recommended Compilation Approach
 
-### Step 1: Build Common Dependencies
+### ⚠️ DO NOT compile modules individually unless absolutely necessary!
+
+Maven's reactor build system automatically resolves and builds dependencies in the correct order. Use the following approach:
+
+### Option 1: Build a Specific Module with Dependencies (RECOMMENDED)
 ```bash
-cd /Users/amar.c/workspace/greymatter-platform/wms-common
+cd /Users/amar.c/workspace/greymatter-platform
+mvn clean install -pl <module-name> -am -DskipTests
+```
+
+**Flags Explained:**
+- `-pl <module-name>` : Specifies the project/module to build
+- `-am` : Also make - automatically builds all dependencies
+- `-DskipTests` : Skips test execution (faster build)
+
+**Examples:**
+```bash
+# Build api-gateway and all its dependencies
+mvn clean install -pl api-gateway -am -DskipTests
+
+# Build auth service and all its dependencies
+mvn clean install -pl gor-platform-auth -am -DskipTests
+
+# Build notification service and all its dependencies
+mvn clean install -pl wms-notification -am -DskipTests
+```
+
+### Option 2: Build Entire Platform
+```bash
+cd /Users/amar.c/workspace/greymatter-platform
 mvn clean install -DskipTests
 ```
-**Status:** ✅ SUCCESS
-**Dependencies Built:**
-- `common-core`
-- `common-data`
-- `common-rest`
-- `common-validation`
-- `common-datasource`
-- `common-utils`
-- `common-elastic`
-- `common-minio`
-- `common-redis`
-- `transactional-outbox`
+**Note:** This builds all modules and takes longer.
 
-### Step 2: Build Billing Dependencies
+### Option 3: Install Parent POM Only
+If you need to install just the parent POM:
 ```bash
-cd /Users/amar.c/workspace/greymatter-platform/wms-billing
-mvn clean install -DskipTests
+cd /Users/amar.c/workspace/greymatter-platform
+mvn clean install -N -DskipTests
 ```
-**Status:** ✅ SUCCESS
-**Dependencies Built:**
-- `billing-core`
-- `billing-client`
-- `billing-service`
+**Flag:** `-N` : Non-recursive (only current project, not modules)
 
-### Step 3: Handle Missing Dependencies
+## Actual Dependency Resolution Example
 
-#### 3.1 Storage Service Issues
+### API Gateway Build (Verified 2025-10-08)
+
+Using the recommended approach:
 ```bash
-cd /Users/amar.c/workspace/greymatter-platform/wms-storage
-mvn clean install -DskipTests
-```
-**Status:** ❌ FAILED
-**Issue:** Missing `srms-core` dependency
-**Error:** `Could not find artifact com.gor.platform:srms-core:jar:1.0-SNAPSHOT`
-
-#### 3.2 Platform Utils Issues
-```bash
-cd /Users/amar.c/workspace/greymatter-platform/gor-platform-utils
-mvn clean install -DskipTests
-```
-**Status:** ❌ FAILED
-**Issue:** Missing `process-client` dependency
-**Error:** `Could not find artifact com.gor.platform:process-client:jar:2.0-SNAPSHOT`
-
-### Step 4: Auth Service Workaround
-
-Since `storage-client` and `common-utils` have missing dependencies, we implemented a workaround:
-
-#### 4.1 Comment Out Storage Client Dependency
-**File:** `gor-platform-auth/auth-service/pom.xml`
-```xml
-<!-- Temporarily commented out due to missing srms-core dependency
-<dependency>
-    <groupId>com.gor.platform</groupId>
-    <artifactId>storage-client</artifactId>
-</dependency>
--->
+cd /Users/amar.c/workspace/greymatter-platform
+mvn clean install -pl api-gateway -am -DskipTests
 ```
 
-#### 4.2 Comment Out InfluxClientUtil Usage
-**Files Modified:**
-- `gor-platform-auth/auth-service/src/main/java/com/gor/platform/auth/service/jobs/ScheduledJobs.java`
-- `gor-platform-auth/auth-service/src/main/java/com/gor/platform/auth/service/component/UtilityComponentImpl.java`
-- `gor-platform-auth/auth-service/src/main/java/com/gor/platform/auth/service/component/UserSessionComponentImpl.java`
-- `gor-platform-auth/auth-service/src/test/java/com/gor/platform/auth/service/jobs/SecheduledJobTests.java`
+Maven automatically built dependencies in this order:
+1. **parent** (root pom)
+2. **wms-common** modules:
+   - common-core
+   - common-data
+   - common-rest-client
+3. **wms-notification**:
+   - notification-core
+   - notification-client
+4. **wms-common** (continued):
+   - common-kafka
+   - transactional-outbox
+   - common-rest
+5. **wms-integration**:
+   - integration-core
+   - integration-client
+6. **wms-common** (final modules):
+   - common-datasource
+   - common-redis
+7. **validation_engine**:
+   - validation-core
+   - validation-client
+8. **gor-platform-auth**:
+   - auth-core
+   - auth-client
+9. **api-gateway** ✅
 
-**Changes Made:**
-```java
-// Commented out imports
-// import com.gor.platform.storage.client.util.InfluxClientUtil;
-
-// Commented out field declarations
-// private final InfluxClientUtil influxClientUtil;
-
-// Commented out method calls
-// influxClientUtil.callInfluxClientSave(influxPojo);
-```
-
-#### 4.3 Fix Constructor Calls
-**Files Modified:**
-- `gor-platform-auth/auth-service/src/test/java/com/gor/platform/auth/service/jobs/SecheduledJobTests.java`
-- `gor-platform-auth/auth-service/src/test/java/com/gor/platform/auth/service/builder/UserSessionBuilderTest.java`
-
-**Changes Made:**
-```java
-// Before
-scheduledJobs = new ScheduledJobs(userBuilderMock, userSessionBuilderMock, null, envMock, authClientMock, logoutComponentMock);
-
-// After
-scheduledJobs = new ScheduledJobs(userBuilderMock, userSessionBuilderMock, envMock, authClientMock, logoutComponentMock);
-```
-
-### Step 5: Build Auth Service
-```bash
-cd /Users/amar.c/workspace/greymatter-platform/gor-platform-auth
-mvn clean install -DskipTests
-```
-**Status:** ✅ SUCCESS
-
-## Final Build Results
-
-```
-[INFO] Reactor Summary for auth 1.0-SNAPSHOT:
-[INFO]
-[INFO] auth ............................................... SUCCESS [  0.159 s]
-[INFO] auth-core .......................................... SUCCESS [  2.452 s]
-[INFO] auth-client ........................................ SUCCESS [  0.575 s]
-[INFO] auth-service ....................................... SUCCESS [  8.206 s]
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-```
-
-## Dependencies Status
-
-| Module | Status | Notes |
-|--------|--------|-------|
-| `wms-common` | ✅ SUCCESS | All common utilities built |
-| `wms-billing` | ✅ SUCCESS | Billing modules built |
-| `wms-storage` | ❌ FAILED | Missing `srms-core` dependency |
-| `gor-platform-utils` | ❌ FAILED | Missing `process-client` dependency |
-| `gor-platform-auth` | ✅ SUCCESS | Built with workaround |
-
-## Workaround Impact
-
-### What's Disabled
-- InfluxDB metrics collection in auth service
-- Storage client functionality
-- Some utility functions that depend on missing modules
-
-### What Still Works
-- Core authentication functionality
-- User session management
-- All other auth service features
-
-## Future Resolution Steps
-
-To fully restore all functionality:
-
-1. **Build Missing Dependencies:**
-   ```bash
-   # Build srms-core (if available)
-   cd /path/to/srms-core
-   mvn clean install -DskipTests
-
-   # Build process-client (if available)
-   cd /path/to/process-client
-   mvn clean install -DskipTests
-   ```
-
-2. **Restore Storage Functionality:**
-   - Uncomment storage-client dependency in `auth-service/pom.xml`
-   - Uncomment InfluxClientUtil imports and usage
-   - Update constructor calls in test files
-
-3. **Build Complete Platform:**
-   ```bash
-   cd /Users/amar.c/workspace/greymatter-platform
-   mvn clean install -DskipTests
-   ```
+**Build Time:** ~19.5 seconds
+**Result:** BUILD SUCCESS
 
 ## Troubleshooting
 
 ### Common Issues
-1. **Missing Dependencies:** Check if all required modules are available in the workspace
-2. **Version Conflicts:** Ensure all modules use compatible versions
-3. **Build Order:** Always build dependencies before dependent modules
 
-### Build Commands
+#### 1. Missing Dependencies
+**Problem:** Module fails with "Could not find artifact" error
+
+**Solution:**
 ```bash
-# Clean build
-mvn clean install -DskipTests
-
-# Build with tests
-mvn clean install
-
-# Build specific module
-mvn clean install -DskipTests -pl module-name
-
-# Build with dependency resolution
-mvn clean install -DskipTests -U
+# Let Maven's reactor resolve dependencies automatically
+cd /Users/amar.c/workspace/greymatter-platform
+mvn clean install -pl <target-module> -am -DskipTests
 ```
 
+#### 2. Parent POM Not Found
+**Problem:** Build fails with "Could not find artifact com.gor.platform:parent:pom"
+
+**Solution:**
+```bash
+# Install parent POM first
+cd /Users/amar.c/workspace/greymatter-platform
+mvn clean install -N -DskipTests
+```
+
+#### 3. Circular Dependencies
+**Problem:** Build gets stuck or fails due to circular references
+
+**Solution:** Maven's reactor build handles this automatically when using `-am` flag from the root directory.
+
+#### 4. Version Conflicts
+**Problem:** Different modules expecting different versions
+
+**Solution:** Check the parent POM's `dependencyManagement` section for version definitions.
+
+### Useful Build Commands
+
+```bash
+# Build a specific module with all its dependencies (RECOMMENDED)
+mvn clean install -pl <module-name> -am -DskipTests
+
+# Build with tests
+mvn clean install -pl <module-name> -am
+
+# Build entire platform
+mvn clean install -DskipTests
+
+# Force update dependencies from remote repositories
+mvn clean install -pl <module-name> -am -DskipTests -U
+
+# Build only the parent POM
+mvn clean install -N -DskipTests
+
+# Resume build from a specific module (after failure)
+mvn clean install -rf :<module-name> -DskipTests
+```
+
+### Build Performance Tips
+
+1. **Skip Tests:** Use `-DskipTests` for faster builds during development
+2. **Parallel Builds:** Use `-T 1C` to build with 1 thread per CPU core
+   ```bash
+   mvn clean install -pl api-gateway -am -DskipTests -T 1C
+   ```
+3. **Offline Mode:** Use `-o` if you have all dependencies cached locally
+   ```bash
+   mvn clean install -pl api-gateway -am -DskipTests -o
+   ```
+
+## Module-Specific Build Times (Reference)
+
+| Module | Build Time | Dependencies Built |
+|--------|------------|-------------------|
+| `api-gateway` | ~19.5s | 23 modules |
+| `gor-platform-auth` | ~15s | 21 modules |
+| `wms-notification` | ~8s | 6 modules |
+| `wms-common` | ~5s | 14 modules |
+
+*Times are approximate with `-DskipTests` flag*
+
+## Key Takeaways
+
+✅ **DO:**
+- Always use `-pl <module> -am` from the root directory
+- Let Maven's reactor handle dependency order
+- Use `-DskipTests` for faster development builds
+
+❌ **DON'T:**
+- Manually compile modules in a specific order
+- Build individual modules from their directories
+- Modify dependencies without understanding the impact
+
 ## Notes
-- This workaround allows the auth service to compile and run
-- Some monitoring/metrics functionality is temporarily disabled
-- The core authentication features remain fully functional
-- Consider this a temporary solution until missing dependencies are resolved
+
+- Maven's reactor build is intelligent and handles complex dependency chains
+- The `-am` (also-make) flag is crucial for building all required dependencies
+- Build times may vary based on system performance and cached dependencies
+- Always build from the root project directory when using `-pl` and `-am` flags
 
 ---
-*Last Updated: 2025-10-07*
+*Last Updated: 2025-10-08*
 *Platform: Greymatter Platform*
 *Java Version: 21*
 *Maven Version: 3.x*
+*Build System: Maven Reactor*

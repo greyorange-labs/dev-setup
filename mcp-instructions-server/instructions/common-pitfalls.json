@@ -1,0 +1,100 @@
+[
+    {
+        "title": "Erlang: Atom Exhaustion",
+        "content": "## CRITICAL: Avoid Dynamic Atom Creation\n\n### The Problem\nAtoms are NOT garbage collected. Creating atoms dynamically can exhaust memory.\n\n### ❌ NEVER DO THIS\n```erlang\n%% Converting user input to atoms\nlist_to_atom(UserInput)\n\n%% Creating atoms from external data\nbinary_to_atom(Data, utf8)\n```\n\n### ✅ SAFE ALTERNATIVES\n```erlang\n%% Use binary or string\nprocess_command(Command) when is_binary(Command) ->\n    case Command of\n        <<\"start\">> -> start();\n        <<\"stop\">> -> stop();\n        _ -> {error, unknown_command}\n    end.\n\n%% Use existing atoms\nlist_to_existing_atom(String)  % Safe - only matches existing atoms\n\n%% For maps, use binary keys\n#{<<\"key\">> => value}  % Not #{key => value}\n```\n\n### Safe Patterns\n1. Use `list_to_existing_atom/1` when you know atoms exist\n2. Pattern match on binaries instead\n3. Use a whitelist approach\n4. Never convert external input to atoms",
+        "category": "pitfalls",
+        "language": "erlang",
+        "priority": 100,
+        "tags": [
+            "critical",
+            "atoms",
+            "memory",
+            "security"
+        ]
+    },
+    {
+        "title": "Erlang: Process Leaks",
+        "content": "## Process Leaks and Memory Issues\n\n### The Problem\nSpawning processes without proper supervision or cleanup causes memory leaks.\n\n### ❌ WRONG\n```erlang\n%% Spawning without supervision\nhandle_request(Request) ->\n    spawn(fun() -> process_request(Request) end).\n\n%% No timeout on gen_server calls\ngen_server:call(Server, Request)  % Can hang forever\n```\n\n### ✅ CORRECT\n```erlang\n%% Use supervisor\nhandle_request(Request) ->\n    supervisor:start_child(request_sup, [Request]).\n\n%% Always use timeouts\ngen_server:call(Server, Request, 5000)  % 5 second timeout\n\n%% Link processes for crash propagation\nhandle_request(Request) ->\n    Pid = spawn_link(fun() -> process_request(Request) end),\n    {ok, Pid}.\n\n%% Monitor for cleanup\nhandle_request(Request) ->\n    Pid = spawn(fun() -> process_request(Request) end),\n    Ref = monitor(process, Pid),\n    receive\n        {'DOWN', Ref, process, Pid, Reason} ->\n            handle_completion(Reason)\n    after 30000 ->\n        exit(Pid, timeout),\n        {error, timeout}\n    end.\n```\n\n### Best Practices\n1. Always use supervisors for long-lived processes\n2. Set timeouts on all gen_server calls\n3. Monitor or link spawned processes\n4. Clean up ETS tables when processes die\n5. Use `spawn_link` or `spawn_monitor`",
+        "category": "pitfalls",
+        "language": "erlang",
+        "priority": 99,
+        "tags": [
+            "processes",
+            "memory-leaks",
+            "supervision"
+        ]
+    },
+    {
+        "title": "Erlang: ETS Table Leaks",
+        "content": "## ETS Table Cleanup\n\n### The Problem\nETS tables survive process crashes unless owned properly.\n\n### ❌ WRONG\n```erlang\n%% Creating ETS in worker process\ninit([]) ->\n    ets:new(my_table, [named_table, public]),\n    {ok, #state{}}.\n    %% Table will be deleted when process dies\n```\n\n### ✅ CORRECT\n```erlang\n%% Create ETS in supervisor\ninit([]) ->\n    ets:new(my_table, [named_table, public, \n                       {heir, whereis(my_sup), []}]),\n    {ok, #state{}}.\n\n%% Or use gen_server to manage lifecycle\ninit([]) ->\n    Table = ets:new(my_table, [private]),\n    {ok, #state{table = Table}}.\n\nterminate(_Reason, #state{table = Table}) ->\n    ets:delete(Table),\n    ok.\n\n%% Give to another process\nets:give_away(Table, DestPid, GiftData)\n```\n\n### Best Practices\n1. Set `heir` option for critical tables\n2. Clean up in `terminate/2`\n3. Use private tables when possible\n4. Monitor table owners\n5. Document table ownership",
+        "category": "pitfalls",
+        "language": "erlang",
+        "priority": 98,
+        "tags": [
+            "ets",
+            "memory-leaks",
+            "cleanup"
+        ]
+    },
+    {
+        "title": "Java: N+1 Query Problem",
+        "content": "## N+1 Query Anti-Pattern\n\n### The Problem\nFetching lazy-loaded relationships in a loop causes multiple database queries.\n\n### ❌ WRONG\n```java\n// Controller or Service\nList<User> users = userRepository.findAll();\nfor (User user : users) {\n    // This triggers a query for EACH user!\n    List<Order> orders = user.getOrders();\n    // ...\n}\n// Result: 1 query for users + N queries for orders = N+1 queries\n```\n\n### ✅ CORRECT Solutions\n\n#### 1. JOIN FETCH\n```java\n@Query(\"SELECT u FROM User u LEFT JOIN FETCH u.orders WHERE u.status = :status\")\nList<User> findActiveUsersWithOrders(@Param(\"status\") UserStatus status);\n```\n\n#### 2. EntityGraph\n```java\n@EntityGraph(attributePaths = {\"orders\", \"orders.items\"})\nList<User> findAll();\n```\n\n#### 3. Projections (for read-only)\n```java\ninterface UserWithOrderCount {\n    String getUsername();\n    Long getOrderCount();\n}\n\n@Query(\"SELECT u.username as username, COUNT(o) as orderCount \" +\n       \"FROM User u LEFT JOIN u.orders o GROUP BY u.username\")\nList<UserWithOrderCount> findUsersWithOrderCount();\n```\n\n### Detection\nEnable SQL logging:\n```yaml\nlogging:\n  level:\n    org.hibernate.SQL: DEBUG\n    org.hibernate.type.descriptor.sql.BasicBinder: TRACE\n```\n\nWatch for multiple SELECT queries for the same type.",
+        "category": "pitfalls",
+        "language": "java",
+        "priority": 100,
+        "tags": [
+            "jpa",
+            "performance",
+            "n+1",
+            "database"
+        ]
+    },
+    {
+        "title": "Java: LazyInitializationException",
+        "content": "## LazyInitializationException\n\n### The Problem\nAccessing lazy-loaded relationships outside transaction scope.\n\n### ❌ WRONG\n```java\n@RestController\npublic class UserController {\n    @Autowired\n    private UserRepository userRepository;\n\n    @GetMapping(\"/users/{id}\")\n    public UserDto getUser(@PathVariable Long id) {\n        User user = userRepository.findById(id).orElseThrow();\n        // Transaction closed here\n        return UserDto.builder()\n            .username(user.getUsername())\n            .orders(user.getOrders()) // LazyInitializationException!\n            .build();\n    }\n}\n```\n\n### ✅ CORRECT Solutions\n\n#### 1. Fetch in Service (Recommended)\n```java\n@Service\n@Transactional(readOnly = true)\npublic class UserService {\n    public UserDto getUser(Long id) {\n        User user = userRepository.findById(id).orElseThrow();\n        // Transaction still open - can access lazy fields\n        return UserDto.builder()\n            .username(user.getUsername())\n            .orderCount(user.getOrders().size())\n            .build();\n    }\n}\n```\n\n#### 2. Use JOIN FETCH\n```java\n@Query(\"SELECT u FROM User u LEFT JOIN FETCH u.orders WHERE u.id = :id\")\nOptional<User> findByIdWithOrders(@Param(\"id\") Long id);\n```\n\n#### 3. Use DTO Projection\n```java\n@Query(\"SELECT new com.example.dto.UserDto(u.username, COUNT(o)) \" +\n       \"FROM User u LEFT JOIN u.orders o WHERE u.id = :id GROUP BY u.id\")\nOptional<UserDto> findUserDto(@Param(\"id\") Long id);\n```\n\n### Best Practices\n1. Keep transactions in service layer\n2. Use DTOs, not entities in controllers\n3. Fetch associations explicitly when needed\n4. Consider using `FetchType.EAGER` for small collections",
+        "category": "pitfalls",
+        "language": "java",
+        "priority": 99,
+        "tags": [
+            "jpa",
+            "lazy-loading",
+            "transactions"
+        ]
+    },
+    {
+        "title": "Java: Entity as DTO Anti-Pattern",
+        "content": "## Never Return Entities from REST APIs\n\n### The Problem\nExposing JPA entities causes multiple issues:\n\n1. **Lazy loading issues** - Jackson tries to serialize lazy fields\n2. **Circular references** - Bidirectional relationships cause infinite loops\n3. **Exposing internals** - Database structure leaked to API\n4. **Security risks** - Sensitive fields exposed\n\n### ❌ WRONG\n```java\n@RestController\npublic class UserController {\n    @GetMapping(\"/users/{id}\")\n    public User getUser(@PathVariable Long id) {\n        return userRepository.findById(id).orElseThrow();\n        // Problems:\n        // - Password might be exposed\n        // - Lazy fields cause exceptions\n        // - Circular references with orders\n    }\n}\n```\n\n### ✅ CORRECT\n```java\n// Define DTO\n@Data\n@Builder\npublic class UserDto {\n    private Long id;\n    private String username;\n    private String email;\n    // No password!\n    // No JPA annotations!\n    // Only fields needed by API\n}\n\n// Use in controller\n@RestController\n@RequiredArgsConstructor\npublic class UserController {\n    private final UserService userService;\n\n    @GetMapping(\"/users/{id}\")\n    public ResponseEntity<UserDto> getUser(@PathVariable Long id) {\n        return userService.findById(id)\n            .map(ResponseEntity::ok)\n            .orElse(ResponseEntity.notFound().build());\n    }\n}\n\n// Convert in service\n@Service\npublic class UserService {\n    public Optional<UserDto> findById(Long id) {\n        return userRepository.findById(id)\n            .map(this::toDto);\n    }\n\n    private UserDto toDto(User entity) {\n        return UserDto.builder()\n            .id(entity.getId())\n            .username(entity.getUsername())\n            .email(entity.getEmail())\n            .build();\n    }\n}\n```\n\n### Fix Circular References (if you must use entities)\n```java\n@Entity\npublic class User {\n    @OneToMany(mappedBy = \"user\")\n    @JsonManagedReference  // Parent side\n    private List<Order> orders;\n}\n\n@Entity\npublic class Order {\n    @ManyToOne\n    @JsonBackReference  // Child side\n    private User user;\n}\n```\n\nBut **DON'T** do this - use DTOs instead!",
+        "category": "pitfalls",
+        "language": "java",
+        "priority": 98,
+        "tags": [
+            "api",
+            "dto",
+            "security",
+            "anti-pattern"
+        ]
+    },
+    {
+        "title": "Java: Transaction Boundary Issues",
+        "content": "## Transaction Management Pitfalls\n\n### Problem 1: @Transactional on Private Methods\n\n❌ **DOESN'T WORK:**\n```java\npublic class UserService {\n    @Transactional  // Ignored!\n    private void updateUser(User user) {\n        userRepository.save(user);\n    }\n}\n```\n\n✅ **WORKS:**\n```java\n@Service\n@Transactional(readOnly = true)  // Default for class\npublic class UserService {\n    @Transactional  // Works on public method\n    public void updateUser(User user) {\n        userRepository.save(user);\n    }\n}\n```\n\n### Problem 2: Self-Invocation\n\n❌ **DOESN'T WORK:**\n```java\npublic class UserService {\n    public void publicMethod() {\n        this.transactionalMethod();  // No transaction!\n    }\n\n    @Transactional\n    public void transactionalMethod() {\n        // ...\n    }\n}\n```\n\n✅ **WORKS:**\n```java\n// Option 1: Split into separate beans\n@Service\npublic class UserService {\n    private final UserTransactionalService txService;\n\n    public void publicMethod() {\n        txService.transactionalMethod();  // Works!\n    }\n}\n\n// Option 2: Self-inject (less preferred)\n@Service\npublic class UserService {\n    @Autowired\n    private UserService self;\n\n    public void publicMethod() {\n        self.transactionalMethod();  // Works!\n    }\n}\n```\n\n### Problem 3: Wrong Propagation\n\n```java\n@Transactional(propagation = Propagation.REQUIRES_NEW)\npublic void processOrders(List<Order> orders) {\n    for (Order order : orders) {\n        processOrder(order);  // Each gets its own transaction\n    }\n}\n\n// Should be:\n@Transactional\npublic void processOrders(List<Order> orders) {\n    for (Order order : orders) {\n        processOrder(order);  // Same transaction\n    }\n}\n```\n\n### Best Practices\n1. Use `@Transactional` on public methods only\n2. Default to `readOnly = true`, override for writes\n3. Be careful with self-invocation\n4. Understand propagation levels\n5. Keep transactions as short as possible",
+        "category": "pitfalls",
+        "language": "java",
+        "priority": 97,
+        "tags": [
+            "transactions",
+            "spring",
+            "aop"
+        ]
+    },
+    {
+        "title": "General: Premature Optimization",
+        "content": "## Don't Optimize Prematurely\n\n### The Problem\nOptimizing before measuring causes:\n- Increased complexity\n- Harder maintenance\n- Wasted time\n- Sometimes worse performance\n\n### ❌ WRONG Priorities\n1. Making it fast\n2. Making it clever\n3. Making it work\n\n### ✅ CORRECT Priorities\n1. **Make it work** - Get correct behavior first\n2. **Make it right** - Clean, maintainable code\n3. **Make it fast** - Only if proven necessary\n\n### When to Optimize\n1. **Measure first** - Use profilers, not guesses\n2. **Identify bottlenecks** - 80/20 rule applies\n3. **Set targets** - Know what \"fast enough\" means\n4. **Benchmark** - Prove optimization helped\n\n### Common Premature Optimizations\n\n#### 1. Object Pooling (Usually Unnecessary)\n```java\n// Modern JVMs are fast at allocation\n// Only pool if proven necessary\n```\n\n#### 2. Complex Caching\n```java\n// Start simple, add caching only when needed\n// Measure cache hit rates\n```\n\n#### 3. Micro-optimizations\n```erlang\n% Don't optimize list operations until proven slow\n% Erlang's compiler is smart\n```\n\n### What to Optimize Early\n1. **Algorithm choice** - O(n²) vs O(n log n) matters\n2. **Data structures** - Right structure for the job\n3. **Database queries** - N+1 problems, missing indexes\n4. **Resource leaks** - Always fix these\n\n### The Rule\n> \"Premature optimization is the root of all evil.\" - Donald Knuth\n\nBut also:\n> \"Premature pessimization is equally bad.\" - Don't write obviously slow code",
+        "category": "pitfalls",
+        "priority": 85,
+        "tags": [
+            "performance",
+            "optimization",
+            "best-practices"
+        ]
+    }
+]

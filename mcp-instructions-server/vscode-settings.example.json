@@ -1,0 +1,13 @@
+{
+    "github.copilot.chat.mcp.servers": {
+        "instructions": {
+            "command": "node",
+            "args": [
+                "/Users/amar.c/workspace/dev-setup/mcp-instructions-server/build/index.js"
+            ],
+            "env": {
+                "VSCODE_CURRENT_FILE": "${file}"
+            }
+        }
+    }
+}

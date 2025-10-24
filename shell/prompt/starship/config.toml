@@ -1,0 +1,18 @@
+format = """
+[  ](fg:#090c0c)\
+$username\
+$directory\
+$character"""
+
+[username]
+style_user = "fg:#5ba3d4"
+style_root = "fg:#5ba3d4"
+format = "[amarBitman]($style)"
+disabled = false
+show_always = true
+
+[directory]
+style = "fg:#5ba3d4"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = " "

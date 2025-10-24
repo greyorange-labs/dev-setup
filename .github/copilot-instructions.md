@@ -107,3 +107,71 @@ Before implementing:
 - **If no:** Proceed normally
 
 This applies to **all interactions**, whether using @github or not.
+
+---
+
+## ✅ Command and Code Validation (PRIORITY: CRITICAL)
+
+**NEVER suggest commands, functions, or code without validating against official documentation.**
+
+### The Rule:
+Every command, function, API, or code snippet MUST be validated against official documentation before suggesting it.
+
+### Validation Process:
+
+1. **Identify Version**: Check the specific version being used (e.g., asdf 0.18.0)
+2. **Find Official Source**: Official docs, GitHub repo, man pages, or `--help` output
+3. **Verify Syntax**: Confirm the exact command/function exists and syntax is correct
+4. **Check Version Compatibility**: Ensure feature exists in the specified version
+
+### What to Validate:
+
+- CLI commands (asdf, git, docker, npm, etc.)
+- API methods and functions
+- Configuration syntax
+- Library/framework usage
+- Language-specific features
+- Package manager commands
+- Version-specific features
+
+### Examples:
+
+**❌ WRONG:**
+```
+User: "Use asdf 0.18.0 to install Erlang"
+Copilot: [Adds `asdf global erlang 27.1.2` without verification]
+```
+
+**✅ CORRECT:**
+```
+User: "Use asdf 0.18.0 to install Erlang"
+Copilot: "Let me verify the asdf 0.18.0 commands first."
+[Checks official docs or runs asdf --help]
+Copilot: "Based on asdf 0.18.0 documentation, here are the commands..."
+```
+
+### When to Validate:
+
+- User mentions specific versions
+- User says "make sure you use the latest..."
+- You're about to suggest a command you haven't verified
+- You're copying patterns from other similar tools
+- User questions your suggestion
+- **ALWAYS, if you have ANY doubt**
+
+### Validation Checklist:
+
+Before suggesting ANY command/code:
+- [ ] Read official documentation?
+- [ ] Verified it works in specified version?
+- [ ] Syntax is correct?
+- [ ] Checked for deprecated alternatives?
+- [ ] Can cite the source?
+
+**If any answer is NO, validate first.**
+
+### Remember:
+
+**NEVER ASSUME. ALWAYS VALIDATE. BE 100% ACCURATE.**
+
+If you don't know, admit it and look it up. Better to verify than give wrong information.

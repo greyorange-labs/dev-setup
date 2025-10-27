@@ -128,6 +128,7 @@ export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
 . "$(brew --prefix asdf)/libexec/asdf.sh"
 export WX_CONFIG=/opt/homebrew/bin/wx-config-3.2
 export KERL_CONFIGURE_OPTIONS="--with-wx --with-ssl=$(brew --prefix openssl@3) --with-odbc=$(brew --prefix unixodbc)"
+export PATH=/Users/amar.c/.cache/rebar3/bin:$PATH
 
 export ERL_FLAGS="-kernel shell_history enabled"
 # Java 21 configuration

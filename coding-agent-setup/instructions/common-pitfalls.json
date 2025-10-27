@@ -1,0 +1,14 @@
+[
+    {
+        "name": "common-pitfalls",
+        "category": "pitfalls",
+        "description": "Common mistakes to avoid in AI-generated code",
+        "content": "# Common AI Code Generation Pitfalls\n\n## Planning Mistakes\n- Jumping to implementation without understanding requirements\n- Making assumptions about technology stack\n- Skipping error cases and edge conditions\n- Not considering existing codebase patterns\n\n## Implementation Issues\n- Hardcoding values that should be configurable\n- Ignoring error handling and validation\n- Creating security vulnerabilities (SQL injection, XSS)\n- Not following project's coding style\n\n## Integration Problems\n- Breaking existing functionality\n- Not updating related documentation\n- Ignoring dependency conflicts\n- Not considering performance impact\n\n## Documentation/Testing\n- Auto-creating docs without understanding context\n- Writing tests that don't add value\n- Overcommenting obvious code\n- Not updating existing documentation"
+    },
+    {
+        "name": "validation-checklist",
+        "category": "validation",
+        "description": "Pre-implementation validation checklist",
+        "content": "# Pre-Implementation Validation Checklist\n\n## Requirements Validation\n- [ ] Requirements clearly understood and confirmed\n- [ ] All assumptions explicitly stated\n- [ ] Scope and boundaries defined\n- [ ] Success criteria established\n\n## Technical Validation\n- [ ] Existing patterns in codebase identified\n- [ ] Dependencies and conflicts checked\n- [ ] Security implications considered\n- [ ] Performance impact assessed\n\n## Implementation Plan\n- [ ] All files to modify identified\n- [ ] Implementation approach documented\n- [ ] Potential risks identified\n- [ ] Rollback plan considered\n\n## Quality Assurance\n- [ ] Code review requirements understood\n- [ ] Testing strategy defined\n- [ ] Documentation needs clarified\n- [ ] Deployment considerations reviewed"
+    }
+]

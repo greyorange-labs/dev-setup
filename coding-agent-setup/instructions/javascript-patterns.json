@@ -1,0 +1,14 @@
+[
+    {
+        "name": "typescript-patterns",
+        "category": "typescript",
+        "description": "TypeScript best practices and common patterns",
+        "content": "# TypeScript Best Practices\n\n## Type Safety\n- Use strict TypeScript configuration\n- Define interfaces for data structures\n- Avoid `any` type - use `unknown` when needed\n- Use type guards for runtime type checking\n\n## ES Modules\n- Use `import.meta.url` instead of `__dirname`\n- Use `fileURLToPath` for file path resolution\n- Set `\"type\": \"module\"` in package.json\n- Use `.js` extensions in import statements\n\n## Error Handling\n- Create custom error classes\n- Use Result<T, E> pattern for expected errors\n- Implement proper error boundaries\n- Log errors with context\n\n## Async Patterns\n- Prefer async/await over Promises.then()\n- Handle Promise rejections properly\n- Use proper concurrency patterns\n- Avoid callback hell"
+    },
+    {
+        "name": "node-patterns",
+        "category": "nodejs",
+        "description": "Node.js specific patterns and best practices",
+        "content": "# Node.js Patterns\n\n## File System\n- Use fs/promises for async file operations\n- Handle ENOENT errors gracefully\n- Use proper path resolution with path.resolve()\n- Check file permissions before operations\n\n## Process Management\n- Handle SIGINT and SIGTERM signals\n- Implement graceful shutdown\n- Use process.exit() appropriately\n- Set proper exit codes\n\n## Dependencies\n- Pin dependency versions in package.json\n- Use npm ci in production builds\n- Audit dependencies regularly\n- Keep dev dependencies separate\n\n## Performance\n- Use streams for large data processing\n- Implement proper connection pooling\n- Cache frequently accessed data\n- Monitor memory usage"
+    }
+]

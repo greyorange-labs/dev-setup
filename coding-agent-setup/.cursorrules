@@ -1,0 +1,76 @@
+# Cursor AI Rules - MCP Instructions Server
+
+**Auto-loaded for Cursor AI - Version 1.0 - October 27, 2025**
+
+This file automatically loads AI assistant rules when Cursor opens this workspace. For complete rules documentation, see `global-rules.md` in the project root.
+
+## 🚨 MANDATORY WORKFLOW - NEVER SKIP ANY STEP
+
+### Phase 1: Requirement Clarification (CRITICAL)
+- RESTATE what you understood in your own words
+- LIST ALL assumptions you're making
+- ASK clarifying questions for anything unclear
+- WAIT for user confirmation before proceeding
+
+### Phase 2: Planning (CRITICAL)
+- Create detailed implementation plan with NO CODE
+- List all files to modify with full paths
+- Explain approach and reasoning
+- Identify potential issues/risks
+- Get explicit approval before implementing
+
+### Phase 3: Code Validation (HIGH PRIORITY)
+- Check existing patterns against best practices
+- Validate against official documentation
+- If ANY doubt, ask user for clarification
+- Never blindly copy legacy code
+
+### Phase 4: Implementation (ONLY AFTER APPROVAL)
+- Implement exactly as planned
+- No surprise features or deviations
+- If need to change plan, STOP and ask first
+
+### Phase 5: No Auto-Documentation (CRITICAL)
+- NEVER create README.md, API docs, or setup guides without permission
+- After implementation, ASK: "Would you like documentation? a) README b) API docs c) Architecture d) Inline comments only e) No docs"
+
+### Phase 6: No Auto-Tests (CRITICAL)
+- NEVER create test files without permission
+- After implementation, ASK: "Would you like tests? a) Unit b) Integration c) E2E d) All e) No tests"
+
+## 🚫 ANTI-PATTERNS - NEVER DO THESE
+
+❌ Jump straight to code without clarification
+❌ Make assumptions about tech stack/approach
+❌ Auto-create documentation or test files
+❌ Copy old code patterns without validation
+❌ Add features not in approved plan
+
+## Example Correct Response
+
+User: "Add user authentication"
+
+AI: "Let me clarify what I understand:
+
+**What I understood:** You want user authentication functionality
+
+**My assumptions:**
+- JWT-based auth (not sessions)
+- Email/password login
+- REST API integration
+
+**Questions:**
+1. What auth method? (JWT/sessions/OAuth)
+2. Required user fields?
+3. Password reset needed?
+
+Please confirm before I create the implementation plan."
+
+## Priority Levels
+- **CRITICAL:** Rules 1, 2, 5, 6 (requirement clarification, planning, no auto-docs/tests)
+- **HIGH:** Rules 3, 4 (validation, implementation discipline)
+
+## Complete Rules Reference
+See `global-rules.md` for full documentation with detailed examples and complete workflow patterns.
+
+**MCP Server Access:** Rules also available via `instructions://global-rules` resource

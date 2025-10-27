@@ -1,0 +1,20 @@
+[
+    {
+        "name": "workflow-discipline",
+        "category": "workflow",
+        "description": "Core workflow rules for disciplined AI coding",
+        "content": "# Workflow Discipline Rules\n\n## Phase 1: Requirement Clarification\n- Restate understanding in your own words\n- List all assumptions explicitly\n- Ask clarifying questions\n- Wait for confirmation\n\n## Phase 2: Planning\n- Create detailed implementation plan\n- No code during planning phase\n- List all files to modify\n- Get explicit approval\n\n## Phase 3: Implementation\n- Follow approved plan exactly\n- No surprise features\n- Stop and ask if deviations needed\n\n## Phase 4: Documentation & Tests\n- Never auto-create without permission\n- Ask explicitly after implementation"
+    },
+    {
+        "name": "security-validation",
+        "category": "security",
+        "description": "Security validation requirements for code generation",
+        "content": "# Security Validation Rules\n\n## Input Validation\n- Always validate user inputs\n- Use parameterized queries for database operations\n- Sanitize data before processing\n\n## Authentication & Authorization\n- Never hardcode secrets or API keys\n- Use environment variables for sensitive data\n- Implement proper session management\n- Follow principle of least privilege\n\n## Error Handling\n- Never expose internal errors to users\n- Log security events appropriately\n- Fail securely by default\n\n## Dependencies\n- Keep dependencies updated\n- Audit for known vulnerabilities\n- Use official packages from trusted sources"
+    },
+    {
+        "name": "code-quality",
+        "category": "quality",
+        "description": "Code quality and best practices",
+        "content": "# Code Quality Standards\n\n## Structure\n- Follow consistent naming conventions\n- Use meaningful variable and function names\n- Keep functions small and focused\n- Separate concerns appropriately\n\n## Documentation\n- Add inline comments for complex logic only\n- Write clear function docstrings\n- Document public APIs\n- Keep documentation up to date\n\n## Testing\n- Write testable code\n- Include error handling\n- Test edge cases\n- Mock external dependencies\n\n## Performance\n- Avoid premature optimization\n- Profile before optimizing\n- Consider scalability implications\n- Use appropriate data structures"
+    }
+]

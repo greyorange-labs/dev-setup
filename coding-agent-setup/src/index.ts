@@ -7,6 +7,8 @@ import {
     ListResourcesRequestSchema,
     ListToolsRequestSchema,
     ReadResourceRequestSchema,
+    ListPromptsRequestSchema,
+    GetPromptRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { InstructionsDatabase } from './db.js';
@@ -17,6 +19,13 @@ import {
     AddInstructionArgsSchema,
     UpdateInstructionArgsSchema,
 } from './types.js';
+import { readFileSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+// ES module equivalents
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 class MCPInstructionsServer {
     private server: Server;
@@ -34,6 +43,7 @@ class MCPInstructionsServer {
                 capabilities: {
                     resources: {},
                     tools: {},
+                    prompts: {},  // ADD PROMPTS CAPABILITY
                 },
             }
         );
@@ -205,6 +215,70 @@ class MCPInstructionsServer {
                     ],
                     isError: true,
                 };
+            }
+        });
+
+        // List available prompts (CRITICAL FOR RULE ENFORCEMENT)
+        this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
+            return {
+                prompts: [
+                    {
+                        name: 'enforce-coding-rules',
+                        description: 'Enforces the 6 critical coding rules: requirement clarification, planning, validation, no auto-docs/tests',
+                        arguments: [],
+                    },
+                    {
+                        name: 'start-conversation',
+                        description: 'Start a new coding conversation with all rules automatically loaded',
+                        arguments: [],
+                    },
+                ],
+            };
+        });
+
+        // Get specific prompt content (THIS IS WHERE RULES ARE INJECTED)
+        this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+            const { name } = request.params;
+
+            try {
+                // Load global rules from file
+                const globalRulesPath = resolve(__dirname, '..', 'global-rules.md');
+                const rulesContent = readFileSync(globalRulesPath, 'utf-8');
+
+                console.error(`[MCP] Injecting rules into conversation via prompt: ${name}`);
+
+                if (name === 'enforce-coding-rules' || name === 'start-conversation') {
+                    return {
+                        messages: [
+                            {
+                                role: 'user',
+                                content: {
+                                    type: 'text',
+                                    text: `CRITICAL SYSTEM INSTRUCTIONS - READ BEFORE RESPONDING:
+
+${rulesContent}
+
+---
+
+YOU MUST FOLLOW THESE RULES FOR EVERY RESPONSE:
+1. When user asks for ANYTHING, start with requirement clarification (restate, assumptions, questions)
+2. After confirmation, create detailed plan with NO code
+3. After plan approval, implement following the plan
+4. After implementation, ASK about documentation and tests
+
+DO NOT SKIP ANY RULE. DO NOT IMPLEMENT WITHOUT APPROVAL.
+
+Now respond to the user's request following Rule 1 (Requirement Clarification).`,
+                                },
+                            },
+                        ],
+                    };
+                }
+
+                throw new Error(`Unknown prompt: ${name}`);
+            } catch (error) {
+                console.error(`Error getting prompt ${name}:`, error);
+                throw new Error(`Failed to get prompt: ${error instanceof Error ? error.message : 'Unknown error'}`);
             }
         });
     }

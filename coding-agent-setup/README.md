@@ -114,6 +114,41 @@ The server provides these rules through both file-based loading (`.github/copilo
 
 ---
 
+## Cursor UI Setup (Alternative Method)
+
+**Cursor has a UI for adding rules directly - no file editing needed!**
+
+### Option 1: Add Rules via Cursor UI (Easiest)
+
+1. **Open Cursor Settings** (⌘+, or Cmd+Comma)
+2. **Navigate to:** Tools & MCP → Rules & Memories
+3. **Click:** "Add Rule" under "User Rules"
+4. **Copy & Paste:** Open [`CURSOR_QUICK_RULES.md`](CURSOR_QUICK_RULES.md) and copy the "All-in-One Rule" section
+5. **Save** the rule
+6. **Restart Cursor** (⌘+Q, then reopen)
+
+**File to use:** [`CURSOR_QUICK_RULES.md`](CURSOR_QUICK_RULES.md) contains pre-formatted rules ready to paste into Cursor UI.
+
+### Option 2: File-Based (Traditional Method)
+
+If you prefer file-based configuration:
+```bash
+# Copy .cursorrules to project or global location
+cp .cursorrules ~/.cursorrules  # Global (all projects)
+# OR
+cp .cursorrules /path/to/your/project/  # Project-specific
+```
+
+### GitHub Copilot Configuration
+
+**Note:** GitHub Copilot does **NOT** have a UI for adding rules. You must use:
+- MCP server configuration (in `settings.json`) - Recommended
+- OR `.github/copilot-instructions.md` files (fallback)
+
+The MCP server approach is more reliable and is already configured if you followed steps 1-4 above.
+
+---
+
 ## Verify It's Working
 
 Test with this prompt in GitHub Copilot Chat or Cursor:

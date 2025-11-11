@@ -96,14 +96,14 @@ This document describes the high-level architecture for implementing distributed
 
 ### 2.2 Logical Architecture Layers
 
-| Layer | Components | Responsibility |
-|-------|------------|----------------|
-| **Instrumentation** | OTel SDKs | Generate and propagate trace context |
-| **Collection** | OTel Collector | Receive, batch, and route traces |
-| **Transport** | Kafka, gRPC | Reliable trace data transmission |
-| **Storage** | Jaeger + Elasticsearch | Persist and index traces |
-| **Query** | Jaeger Query Service | Search and retrieve traces |
-| **Visualization** | Jaeger UI | Display and analyze traces |
+| Layer               | Components             | Responsibility                       |
+| ------------------- | ---------------------- | ------------------------------------ |
+| **Instrumentation** | OTel SDKs              | Generate and propagate trace context |
+| **Collection**      | OTel Collector         | Receive, batch, and route traces     |
+| **Transport**       | Kafka, gRPC            | Reliable trace data transmission     |
+| **Storage**         | Jaeger + Elasticsearch | Persist and index traces             |
+| **Query**           | Jaeger Query Service   | Search and retrieve traces           |
+| **Visualization**   | Jaeger UI              | Display and analyze traces           |
 
 ---
 
@@ -212,12 +212,12 @@ service:
 
 **Storage Options**:
 
-| Storage | Use Case | Pros | Cons |
-|---------|----------|------|------|
+| Storage           | Use Case                 | Pros                           | Cons                  |
+| ----------------- | ------------------------ | ------------------------------ | --------------------- |
 | **Elasticsearch** | Production (recommended) | Fast queries, scalable, mature | Higher resource usage |
-| **Cassandra** | Very high scale | Highly scalable, distributed | Complex ops |
-| **BadgerDB** | Development/testing | Simple, embedded | Not distributed |
-| **Memory** | Testing only | Fast | Data loss on restart |
+| **Cassandra**     | Very high scale          | Highly scalable, distributed   | Complex ops           |
+| **BadgerDB**      | Development/testing      | Simple, embedded               | Not distributed       |
+| **Memory**        | Testing only             | Fast                           | Data loss on restart  |
 
 **Recommendation**: Elasticsearch for production
 
@@ -455,68 +455,68 @@ EMQX (MQTT):
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    Kubernetes Cluster                            │
-│                                                                  │
+│                    Kubernetes Cluster                           │
+│                                                                 │
 │  ┌────────────────────────────────────────────────────────────┐ │
-│  │              Application Namespace                          │ │
-│  │                                                              │ │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │ │
-│  │  │  Service A  │  │  Service B  │  │  Service C  │        │ │
-│  │  │  (Java)     │  │  (Python)   │  │  (Erlang)   │        │ │
-│  │  │             │  │             │  │             │        │ │
-│  │  │ OTel SDK    │  │ OTel SDK    │  │ OTel SDK    │        │ │
-│  │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘        │ │
+│  │              Application Namespace                         │ │
+│  │                                                            │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │ │
+│  │  │  Service A  │  │  Service B  │  │  Service C  │         │ │
+│  │  │  (Java)     │  │  (Python)   │  │  (Erlang)   │         │ │
+│  │  │             │  │             │  │             │         │ │
+│  │  │ OTel SDK    │  │ OTel SDK    │  │ OTel SDK    │         │ │
+│  │  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘         │ │
 │  │         │                │                │                │ │
 │  │         └────────────────┼────────────────┘                │ │
-│  │                          │                                  │ │
-│  └──────────────────────────┼──────────────────────────────────┘ │
-│                             │                                    │
-│  ┌──────────────────────────┼──────────────────────────────────┐ │
-│  │        Observability Namespace                              │ │
-│  │                          │                                  │ │
+│  │                          │                                 │ │
+│  └──────────────────────────┼─────────────────────────────────┘ │
+│                             │                                   │
+│  ┌──────────────────────────┼─────────────────────────────────┐ │
+│  │        Observability Namespace                             │ │
+│  │                          │                                 │ │
 │  │         ┌────────────────▼───────────────────┐             │ │
 │  │         │  OTel Collector DaemonSet          │             │ │
 │  │         │  (Agent on each node)              │             │ │
 │  │         └────────────────┬───────────────────┘             │ │
-│  │                          │                                  │ │
+│  │                          │                                 │ │
 │  │         ┌────────────────▼───────────────────┐             │ │
 │  │         │  OTel Collector Deployment         │             │ │
 │  │         │  (Gateway - Load Balanced)         │             │ │
 │  │         └────────────────┬───────────────────┘             │ │
-│  │                          │                                  │ │
+│  │                          │                                 │ │
 │  │         ┌────────────────┼───────────────────┐             │ │
 │  │         │                ▼                   │             │ │
-│  │    ┌────▼─────┐    ┌──────────┐    ┌───────▼──────┐      │ │
-│  │    │  Kafka   │    │  Jaeger  │    │ Elasticsearch│      │ │
-│  │    │ (Buffer) │    │ Collector│    │   Cluster    │      │ │
-│  │    └────┬─────┘    └────┬─────┘    └───────┬──────┘      │ │
-│  │         │               │                   │             │ │
-│  │         └───────────────┼───────────────────┘             │ │
+│  │    ┌────▼─────┐    ┌──────────┐    ┌───────▼──────┐        │ │
+│  │    │  Kafka   │    │  Jaeger  │    │ Elasticsearch│        │ │
+│  │    │ (Buffer) │    │ Collector│    │   Cluster    │        │ │
+│  │    └────┬─────┘    └────┬─────┘    └───────┬──────┘        │ │
+│  │         │               │                  │               │ │
+│  │         └───────────────┼──────────────────┘               │ │
 │  │                         │                                  │ │
-│  │                ┌────────▼────────┐                        │ │
-│  │                │  Jaeger Query   │                        │ │
-│  │                │     Service     │                        │ │
-│  │                └────────┬────────┘                        │ │
+│  │                ┌────────▼────────┐                         │ │
+│  │                │  Jaeger Query   │                         │ │
+│  │                │     Service     │                         │ │
+│  │                └────────┬────────┘                         │ │
 │  │                         │                                  │ │
-│  │                ┌────────▼────────┐                        │ │
-│  │                │   Jaeger UI     │                        │ │
-│  │                │  (Service/      │                        │ │
-│  │                │   Ingress)      │                        │ │
-│  │                └─────────────────┘                        │ │
-│  └──────────────────────────────────────────────────────────┘ │
+│  │                ┌────────▼────────┐                         │ │
+│  │                │   Jaeger UI     │                         │ │
+│  │                │  (Service/      │                         │ │
+│  │                │   Ingress)      │                         │ │
+│  │                └─────────────────┘                         │ │
+│  └────────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ### 6.2 Resource Allocation
 
-| Component | CPU | Memory | Replicas | Notes |
-|-----------|-----|--------|----------|-------|
-| OTel Collector (Agent) | 200m | 512Mi | 1/node | DaemonSet |
-| OTel Collector (Gateway) | 1 core | 2Gi | 3 | Deployment |
-| Jaeger Collector | 2 cores | 4Gi | 3 | StatefulSet |
-| Jaeger Query | 1 core | 2Gi | 2 | Deployment |
-| Jaeger UI | 500m | 1Gi | 2 | Deployment |
-| Elasticsearch | 4 cores | 16Gi | 3 | StatefulSet |
+| Component                | CPU     | Memory | Replicas | Notes       |
+| ------------------------ | ------- | ------ | -------- | ----------- |
+| OTel Collector (Agent)   | 200m    | 512Mi  | 1/node   | DaemonSet   |
+| OTel Collector (Gateway) | 1 core  | 2Gi    | 3        | Deployment  |
+| Jaeger Collector         | 2 cores | 4Gi    | 3        | StatefulSet |
+| Jaeger Query             | 1 core  | 2Gi    | 2        | Deployment  |
+| Jaeger UI                | 500m    | 1Gi    | 2        | Deployment  |
+| Elasticsearch            | 4 cores | 16Gi   | 3        | StatefulSet |
 
 ### 6.3 Network Architecture
 
@@ -559,32 +559,32 @@ Elasticsearch           Disk usage > 80%             Add node
 #### 7.2.1 Sampling Strategy
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                  Sampling Strategies                     │
+│                  Sampling Strategies                    │
 ├─────────────────────────────────────────────────────────┤
-│                                                          │
+│                                                         │
 │  1. Head-based Sampling (at application)                │
 │     - AlwaysOn: 100% (dev/staging)                      │
 │     - Probability: 10% (production)                     │
 │     - RateLimiting: 100 traces/sec/service              │
-│                                                          │
+│                                                         │
 │  2. Tail-based Sampling (at collector)                  │
 │     - Always sample errors (status=error)               │
 │     - Always sample slow requests (duration > 1s)       │
 │     - Sample 10% of successful fast requests            │
-│                                                          │
+│                                                         │
 │  Recommended: Hybrid approach                           │
 │  - 100% sampling at app (low overhead)                  │
 │  - Intelligent filtering at collector                   │
-│                                                          │
+│                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
 #### 7.2.2 Performance Impact
-| Component | Latency Overhead | CPU Overhead | Memory Overhead |
-|-----------|------------------|--------------|-----------------|
-| Auto-instrumentation | <1ms | 2-5% | 50-100MB |
-| OTel SDK | <0.5ms | 1-2% | 20-50MB |
-| Context propagation | <0.1ms | <1% | Negligible |
+| Component            | Latency Overhead | CPU Overhead | Memory Overhead |
+| -------------------- | ---------------- | ------------ | --------------- |
+| Auto-instrumentation | <1ms             | 2-5%         | 50-100MB        |
+| OTel SDK             | <0.5ms           | 1-2%         | 20-50MB         |
+| Context propagation  | <0.1ms           | <1%          | Negligible      |
 
 #### 7.2.3 Batching Configuration
 ```yaml
@@ -598,10 +598,10 @@ batch_processor:
 ### 7.3 Data Retention
 
 | Environment | Retention Period | Storage Size (Est.) |
-|-------------|------------------|---------------------|
-| Development | 7 days | 50GB |
-| Staging | 14 days | 100GB |
-| Production | 30 days | 500GB |
+| ----------- | ---------------- | ------------------- |
+| Development | 7 days           | 50GB                |
+| Staging     | 14 days          | 100GB               |
+| Production  | 30 days          | 500GB               |
 
 **Elasticsearch Index Strategy**:
 - Daily indices: `jaeger-span-2025-10-15`
@@ -695,47 +695,47 @@ Strategy:
 
 ### 9.1 Why OpenTelemetry?
 
-| Criteria | OpenTelemetry | Alternatives (Jaeger SDK, Zipkin) |
-|----------|---------------|-----------------------------------|
-| **Vendor neutrality** | ✅ CNCF standard | ❌ Vendor-specific |
-| **Future-proof** | ✅ Active development | ⚠️ Legacy |
-| **Language support** | ✅ All major languages | ⚠️ Limited |
-| **Auto-instrumentation** | ✅ Extensive | ⚠️ Partial |
-| **Ecosystem** | ✅ Large community | ⚠️ Smaller |
-| **Flexibility** | ✅ Multiple backends | ❌ Single backend |
+| Criteria                 | OpenTelemetry         | Alternatives (Jaeger SDK, Zipkin) |
+| ------------------------ | --------------------- | --------------------------------- |
+| **Vendor neutrality**    | ✅ CNCF standard       | ❌ Vendor-specific                 |
+| **Future-proof**         | ✅ Active development  | ⚠️ Legacy                          |
+| **Language support**     | ✅ All major languages | ⚠️ Limited                         |
+| **Auto-instrumentation** | ✅ Extensive           | ⚠️ Partial                         |
+| **Ecosystem**            | ✅ Large community     | ⚠️ Smaller                         |
+| **Flexibility**          | ✅ Multiple backends   | ❌ Single backend                  |
 
 ### 9.2 Why Jaeger Backend?
 
-| Criteria | Jaeger | Zipkin | Tempo | X-Ray |
-|----------|--------|--------|-------|-------|
-| **Maturity** | ✅ Production-ready | ✅ Mature | ⚠️ Newer | ✅ AWS-specific |
-| **UI Features** | ✅ Rich UI | ⚠️ Basic | ⚠️ Limited | ⚠️ AWS Console |
-| **Scalability** | ✅ High | ⚠️ Medium | ✅ Very high | ✅ Managed |
-| **Cost** | ✅ Free | ✅ Free | ✅ Free | ❌ AWS costs |
-| **Storage options** | ✅ Multiple | ⚠️ Limited | ✅ Multiple | ❌ AWS only |
-| **Community** | ✅ Large | ✅ Large | ⚠️ Growing | ⚠️ AWS-focused |
+| Criteria            | Jaeger             | Zipkin    | Tempo       | X-Ray          |
+| ------------------- | ------------------ | --------- | ----------- | -------------- |
+| **Maturity**        | ✅ Production-ready | ✅ Mature  | ⚠️ Newer     | ✅ AWS-specific |
+| **UI Features**     | ✅ Rich UI          | ⚠️ Basic   | ⚠️ Limited   | ⚠️ AWS Console  |
+| **Scalability**     | ✅ High             | ⚠️ Medium  | ✅ Very high | ✅ Managed      |
+| **Cost**            | ✅ Free             | ✅ Free    | ✅ Free      | ❌ AWS costs    |
+| **Storage options** | ✅ Multiple         | ⚠️ Limited | ✅ Multiple  | ❌ AWS only     |
+| **Community**       | ✅ Large            | ✅ Large   | ⚠️ Growing   | ⚠️ AWS-focused  |
 
 **Decision**: Jaeger provides the best balance of features, maturity, and flexibility.
 
 ### 9.3 Storage: Elasticsearch vs Cassandra
 
-| Factor | Elasticsearch | Cassandra |
-|--------|---------------|-----------|
-| **Query flexibility** | ✅ Rich queries | ⚠️ Limited |
-| **Scalability** | ✅ Good | ✅ Excellent |
-| **Operational complexity** | ✅ Moderate | ⚠️ High |
-| **Cost** | ✅ Moderate | ⚠️ Higher |
-| **Team expertise** | ✅ Common | ⚠️ Specialized |
+| Factor                     | Elasticsearch  | Cassandra     |
+| -------------------------- | -------------- | ------------- |
+| **Query flexibility**      | ✅ Rich queries | ⚠️ Limited     |
+| **Scalability**            | ✅ Good         | ✅ Excellent   |
+| **Operational complexity** | ✅ Moderate     | ⚠️ High        |
+| **Cost**                   | ✅ Moderate     | ⚠️ Higher      |
+| **Team expertise**         | ✅ Common       | ⚠️ Specialized |
 
 **Decision**: Elasticsearch for better query capabilities and team familiarity.
 
 ### 9.4 Deployment: Sidecar vs DaemonSet
 
-| Approach | Pros | Cons | Decision |
-|----------|------|------|----------|
-| **Sidecar** | Isolated, per-pod | Resource overhead | ❌ Not chosen |
-| **DaemonSet** | Efficient, node-level | Shared resource | ✅ Chosen |
-| **Gateway only** | Simple | Single point of failure | ❌ Not chosen |
+| Approach         | Pros                  | Cons                    | Decision     |
+| ---------------- | --------------------- | ----------------------- | ------------ |
+| **Sidecar**      | Isolated, per-pod     | Resource overhead       | ❌ Not chosen |
+| **DaemonSet**    | Efficient, node-level | Shared resource         | ✅ Chosen     |
+| **Gateway only** | Simple                | Single point of failure | ❌ Not chosen |
 
 **Decision**: DaemonSet + Gateway for efficiency and fault tolerance.
 
@@ -767,10 +767,10 @@ Implementation:
 
 ### 9.7 Kafka vs Direct to Jaeger
 
-| Approach | Pros | Cons | Decision |
-|----------|------|------|----------|
-| **With Kafka** | Buffering, replay, fault-tolerant | Added complexity | ✅ Chosen |
-| **Direct** | Simpler, lower latency | No buffering | ❌ Not chosen |
+| Approach       | Pros                              | Cons             | Decision     |
+| -------------- | --------------------------------- | ---------------- | ------------ |
+| **With Kafka** | Buffering, replay, fault-tolerant | Added complexity | ✅ Chosen     |
+| **Direct**     | Simpler, lower latency            | No buffering     | ❌ Not chosen |
 
 **Decision**: Use Kafka for production resilience, direct for dev/test.
 
@@ -908,22 +908,22 @@ Implementation:
 
 ### 11.1 Technical Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| Service coverage | 100% | All services instrumented |
-| Trace completion rate | >95% | Traces with all expected spans |
-| Query latency (p99) | <500ms | Jaeger UI query response time |
-| Data freshness | <30s | Time from span generation to availability |
-| System overhead | <2% | CPU/memory impact on applications |
+| Metric                | Target | Measurement                               |
+| --------------------- | ------ | ----------------------------------------- |
+| Service coverage      | 100%   | All services instrumented                 |
+| Trace completion rate | >95%   | Traces with all expected spans            |
+| Query latency (p99)   | <500ms | Jaeger UI query response time             |
+| Data freshness        | <30s   | Time from span generation to availability |
+| System overhead       | <2%    | CPU/memory impact on applications         |
 
 ### 11.2 Business Metrics
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| MTTR reduction | 40% | Time to identify root cause |
-| Team adoption | 80% | Teams actively using traces |
-| Incidents debugged with traces | 70% | Percentage of incidents |
-| Developer satisfaction | 4/5 | Survey score |
+| Metric                         | Target | Measurement                 |
+| ------------------------------ | ------ | --------------------------- |
+| MTTR reduction                 | 40%    | Time to identify root cause |
+| Team adoption                  | 80%    | Teams actively using traces |
+| Incidents debugged with traces | 70%    | Percentage of incidents     |
+| Developer satisfaction         | 4/5    | Survey score                |
 
 ---
 

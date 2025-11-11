@@ -2,88 +2,120 @@
 
 ## Document Index
 
-This directory contains comprehensive documentation for implementing distributed tracing across our multi-language microservices architecture.
+This directory contains comprehensive documentation for implementing distributed tracing across our multi-language microservices architecture, comparing two leading solutions: **OpenTelemetry + Jaeger** and **SigNoz**.
 
-### Quick Navigation
+### 🎯 Quick Start
 
-1. **[01_HLD_HIGH_LEVEL_DESIGN.md](01_HLD_HIGH_LEVEL_DESIGN.md)** - High-Level Design
-   - Architecture overview
-   - Component interactions
-   - System topology
-   - Design decisions
+**New to this project?** Start here:
+1. **[COMPARISON_ANALYSIS.md](COMPARISON_ANALYSIS.md)** - Head-to-head comparison and recommendation
+2. **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)** - Quick decision guide
 
-2. **[02_LLD_LOW_LEVEL_DESIGN.md](02_LLD_LOW_LEVEL_DESIGN.md)** - Low-Level Design
-   - Detailed implementation specifications
-   - Language-specific integrations
-   - Configuration details
-   - Code examples
+### 📊 Comparison Documents
 
-3. **[03_COMPARISON_TOOLS.md](03_COMPARISON_TOOLS.md)** - Tools Comparison
-   - OpenTelemetry + Jaeger vs Zipkin
-   - Feature comparison matrix
-   - Pros and cons analysis
+1. **[COMPARISON_ANALYSIS.md](COMPARISON_ANALYSIS.md)** - **START HERE!**
+   - Comprehensive SigNoz vs Jaeger comparison
+   - Feature matrix, cost analysis, performance benchmarks
+   - Recommendation and decision matrix
 
-4. **[04_IMPLEMENTATION_GUIDE.md](04_IMPLEMENTATION_GUIDE.md)** - Implementation Guide
-   - Step-by-step setup instructions
-   - Deployment configurations
-   - Testing procedures
+2. **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)** - High-Level Overview
+   - Quick comparison (2-minute read)
+   - Key findings and recommendation
 
-5. **[05_MIGRATION_STRATEGY.md](05_MIGRATION_STRATEGY.md)** - Migration Strategy
-   - Phased rollout plan
-   - Service prioritization
-   - Rollback procedures
+### 🔍 Solution-Specific Documentation
 
-6. **[06_OPERATIONAL_GUIDE.md](06_OPERATIONAL_GUIDE.md)** - Operational Guide
-   - Monitoring the monitoring
-   - Troubleshooting
-   - Best practices
+#### OpenTelemetry + Jaeger (Recommended for POC)
+📁 **[opentelemetry-jaeger/](opentelemetry-jaeger/)**
 
-## Executive Summary
+1. **[01_HLD_HIGH_LEVEL_DESIGN.md](opentelemetry-jaeger/01_HLD_HIGH_LEVEL_DESIGN.md)** - Architecture
+2. **[02_LLD_LOW_LEVEL_DESIGN.md](opentelemetry-jaeger/02_LLD_LOW_LEVEL_DESIGN.md)** - Implementation Details
+3. **[03_COMPARISON_TOOLS.md](opentelemetry-jaeger/03_COMPARISON_TOOLS.md)** - Tool Comparisons
+4. **[04_IMPLEMENTATION_GUIDE.md](opentelemetry-jaeger/04_IMPLEMENTATION_GUIDE.md)** - Production Setup
+5. **[05_MIGRATION_STRATEGY.md](opentelemetry-jaeger/05_MIGRATION_STRATEGY.md)** - Migration Plan
+6. **[06_OPERATIONAL_GUIDE.md](opentelemetry-jaeger/06_OPERATIONAL_GUIDE.md)** - Operations
+7. **[07_LOCAL_POC_SETUP.md](opentelemetry-jaeger/07_LOCAL_POC_SETUP.md)** - **Docker Compose POC** ⭐
 
-### Problem Statement
+#### SigNoz (Alternative - Full Observability Platform)
+📁 **[signoz/](signoz/)**
+
+1. **[01_ARCHITECTURE.md](signoz/01_ARCHITECTURE.md)** - SigNoz Architecture
+2. **[02_LOCAL_POC_SETUP.md](signoz/02_LOCAL_POC_SETUP.md)** - **Docker Compose POC** ⭐
+
+---
+
+## Problem Statement
+
 Our software ecosystem consists of multiple microservices built on different technology stacks (Java 21, Erlang 27, Python 3, Node.js) that need unified observability for:
 - Request flow tracking across service boundaries
 - Performance bottleneck identification
 - Root cause analysis for failures
 - Service dependency mapping
 
-### Solution
-Implement **OpenTelemetry + Jaeger** as our distributed tracing solution, providing:
-- Standardized tracing across all languages
-- Real-time trace visualization
-- Service performance metrics
-- Integration with existing infrastructure (Kafka, PostgreSQL, Redis, etc.)
+## Solutions Evaluated
 
-### Technology Stack
+### 1. OpenTelemetry + Jaeger ✅ **Recommended**
+- **Scope**: Distributed tracing (focused)
+- **Maturity**: 9 years, battle-tested
+- **Resources**: Low (1GB RAM for POC)
+- **Best for**: Pure tracing needs, lighter deployments
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| Instrumentation | OpenTelemetry SDKs | Collect traces from applications |
-| Collector | OpenTelemetry Collector | Aggregate and process traces |
-| Backend | Jaeger | Store and query traces |
-| Storage | Elasticsearch/Cassandra | Trace data persistence |
-| Message Queue | Kafka | Buffer traces during high load |
-| UI | Jaeger UI | Visualize and analyze traces |
+### 2. SigNoz ⭐ **Alternative**
+- **Scope**: Full observability (traces + metrics + logs)
+- **Maturity**: 3 years, growing adoption
+- **Resources**: Higher (5GB RAM for POC)
+- **Best for**: Unified observability platform
 
-### Key Benefits
+See **[COMPARISON_ANALYSIS.md](COMPARISON_ANALYSIS.md)** for detailed comparison.
 
-1. **Unified Observability**: Single pane of glass for all services
-2. **Language Agnostic**: Works with Java, Erlang, Python, Node.js
-3. **Vendor Neutral**: No lock-in, can switch backends
-4. **Industry Standard**: CNCF-backed, future-proof
-5. **Auto-instrumentation**: Minimal code changes required
-6. **Production Ready**: Battle-tested at scale
+## Technology Stack
 
-### Implementation Timeline
+### OpenTelemetry + Jaeger
+| Component       | Technology              | Purpose                          |
+| --------------- | ----------------------- | -------------------------------- |
+| Instrumentation | OpenTelemetry SDKs      | Collect traces from applications |
+| Collector       | OpenTelemetry Collector | Aggregate and process traces     |
+| Backend         | Jaeger                  | Store and query traces           |
+| Storage         | Elasticsearch/Cassandra | Trace data persistence           |
+| Message Queue   | Kafka (optional)        | Buffer traces during high load   |
+| UI              | Jaeger UI               | Visualize and analyze traces     |
 
-| Phase | Duration | Description |
-|-------|----------|-------------|
-| Phase 1 | 2 weeks | Infrastructure setup (Jaeger, Collector, Storage) |
-| Phase 2 | 3 weeks | Pilot implementation (2-3 critical services) |
-| Phase 3 | 6 weeks | Gradual rollout to all services |
-| Phase 4 | 2 weeks | Optimization and fine-tuning |
+### SigNoz
+| Component       | Technology           | Purpose                                   |
+| --------------- | -------------------- | ----------------------------------------- |
+| Instrumentation | OpenTelemetry SDKs   | Collect all telemetry                     |
+| Collector       | OTel Collector       | Aggregate and process                     |
+| Backend         | SigNoz Query Service | API and business logic                    |
+| Storage         | ClickHouse           | Unified storage (traces + metrics + logs) |
+| UI              | SigNoz Frontend      | Unified observability UI                  |
 
-### Success Metrics
+## Key Benefits
+
+### Common (Both Solutions)
+1. **Language Agnostic**: Works with Java, Erlang, Python, Node.js
+2. **Vendor Neutral**: No lock-in, open source
+3. **Industry Standard**: CNCF OpenTelemetry
+4. **Auto-instrumentation**: Minimal code changes
+
+### Jaeger-Specific
+- ✅ Lightweight (1GB RAM for POC)
+- ✅ Mature and battle-tested (9 years)
+- ✅ Simpler (focused on tracing)
+
+### SigNoz-Specific
+- ✅ Unified observability (traces + metrics + logs)
+- ✅ Built-in dashboards and alerting
+- ✅ Better query performance (ClickHouse)
+
+## Implementation Timeline
+
+| Phase   | Duration  | Description            |
+| ------- | --------- | ---------------------- |
+| Phase 1 | Week 1-2  | Run Jaeger POC locally |
+| Phase 2 | Week 3-4  | Run SigNoz POC locally |
+| Phase 3 | Week 5    | Compare and decide     |
+| Phase 4 | Week 6-8  | Production deployment  |
+| Phase 5 | Week 9-12 | Gradual rollout        |
+
+## Success Metrics
 
 - **Coverage**: 100% of microservices instrumented
 - **Performance Impact**: <1% latency overhead
@@ -92,18 +124,63 @@ Implement **OpenTelemetry + Jaeger** as our distributed tracing solution, provid
 
 ## Getting Started
 
-1. Read the [High-Level Design](01_HLD_HIGH_LEVEL_DESIGN.md) for architecture overview
-2. Review the [Low-Level Design](02_LLD_LOW_LEVEL_DESIGN.md) for implementation details
-3. Follow the [Implementation Guide](04_IMPLEMENTATION_GUIDE.md) for setup
-4. Reference the [Operational Guide](06_OPERATIONAL_GUIDE.md) for day-to-day operations
+### For Decision Makers
+1. Read **[COMPARISON_ANALYSIS.md](COMPARISON_ANALYSIS.md)** - Comprehensive comparison
+2. Review **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)** - Quick overview
+3. Make informed decision
+
+### For Engineers (POC Testing)
+
+**Week 1-2: Test Jaeger**
+1. Follow **[opentelemetry-jaeger/07_LOCAL_POC_SETUP.md](opentelemetry-jaeger/07_LOCAL_POC_SETUP.md)**
+2. Deploy locally with Docker Compose
+3. Instrument sample applications
+4. Evaluate features and resource usage
+
+**Week 3-4: Test SigNoz**
+1. Follow **[signoz/02_LOCAL_POC_SETUP.md](signoz/02_LOCAL_POC_SETUP.md)**
+2. Deploy locally with Docker Compose
+3. Instrument same applications
+4. Compare with Jaeger POC
+
+**Week 5: Compare & Decide**
+- Review actual measurements
+- Consider team feedback
+- Make final decision
+
+### For Production Deployment
+1. Choose solution based on POC results
+2. Review architecture docs (HLD for chosen solution)
+3. Follow implementation guide
+4. Plan gradual rollout
+
+---
+
+## Quick Links
+
+### POC Setup Guides ⭐
+- **[Jaeger Local POC](opentelemetry-jaeger/07_LOCAL_POC_SETUP.md)** - Docker Compose setup (lighter, faster)
+- **[SigNoz Local POC](signoz/02_LOCAL_POC_SETUP.md)** - Docker Compose setup (full observability)
+
+### Comparison Docs
+- **[Comparison Analysis](COMPARISON_ANALYSIS.md)** - Detailed comparison
+- **[Executive Summary](EXECUTIVE_SUMMARY.md)** - Quick overview
+
+### Architecture
+- **[Jaeger HLD](opentelemetry-jaeger/01_HLD_HIGH_LEVEL_DESIGN.md)** - Jaeger architecture
+- **[SigNoz Architecture](signoz/01_ARCHITECTURE.md)** - SigNoz architecture
+
+---
 
 ## Support & Contact
 
 For questions or issues:
-- Technical Lead: [Your Name]
-- Architecture Review: [Architecture Team]
-- Documentation: This repository
+- **Documentation**: This repository
+- **Jaeger Community**: [CNCF Slack](https://cloud-native.slack.com/archives/CGG7NFUJ3)
+- **SigNoz Community**: [SigNoz Slack](https://signoz.io/slack)
+- **OpenTelemetry**: [OTel Slack](https://cloud-native.slack.com/archives/C01N3AT62SJ)
 
 ---
-*Last Updated: October 15, 2025*
-*Version: 1.0*
+
+*Last Updated: November 7, 2025*
+*Version: 2.0 - Added SigNoz comparison*

@@ -104,7 +104,7 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 ## ------------------------------------------------------------------------------------------------##
-HOMEBREW_NO_AUTO_UPDATE=1
+export HOMEBREW_NO_AUTO_UPDATE=1
 export PATH="/opt/homebrew/opt/findutils/libexec/gnubin:$PATH"
 export PATH="/opt/homebrew/opt/gnu-tar/libexec/gnubin:$PATH"
 export PATH="/opt/homebrew/opt/gnu-sed/libexec/gnubin:$PATH"
@@ -129,12 +129,17 @@ export PATH="$HOME/.asdf/bin:$HOME/.asdf/shims:$PATH"
 export WX_CONFIG=/opt/homebrew/bin/wx-config-3.2
 export KERL_CONFIGURE_OPTIONS="--with-wx --with-ssl=$(brew --prefix openssl@3) --with-odbc=$(brew --prefix unixodbc)"
 export PATH=/Users/amar.c/.cache/rebar3/bin:$PATH
-
 export ERL_FLAGS="-kernel shell_history enabled"
+
+### Erlang language server
+export ELP_EQWALIZER_PATH="/Users/amar.c/workspace/erlang_libs/open_source/erlang-language-platform/eqwalizer/eqwalizer/target/scala-3.6.4/eqwalizer.jar"
+export EQWALIZER_DIR="/Users/amar.c/workspace/erlang_libs/open_source/erlang-language-platform/eqwalizer/eqwalizer_support"
+
 # Java 21 configuration
 export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
 export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
 export CPPFLAGS="-I/opt/homebrew/opt/openjdk@21/include"
+export PATH=$PATH:~/bin
 
 
 ## Shell prompt
@@ -167,3 +172,28 @@ alias din='docker exec -it influxdb influx'
 ### SSH
 alias pt='command ssh greyuser@192.168.9.230'
 alias jump='command ssh amar.c@192.168.9.237'
+
+## Java-Platform
+export SERVER_PORT_REGISTRY=8761
+export API_GATEWAY_PORT=8085
+export AUTH_SERVICE_PORT=9999
+export API_GATEWAY_ENABLE_OAUTH_AUTHENTICATION=true
+export API_GATEWAY_ENABLE_ERROR_HANDLING=true
+export API_GATEWAY_DYNAMIC_ROUTES_JSON='[
+  {
+    "id": "gm_core_common_route",
+    "uri": "http://nginx.local",
+    "order": -1,
+    "methods": ["GET", "POST"],
+    "pathMatch": {
+      "type": "prefix",
+      "pattern": "/gm_core/api/butler_shared",
+      "stripPrefix": false
+    },
+    "auth": {
+      "required": true
+    }
+  }
+]'
+alias kill-auth='lsof -iTCP:9999 -sTCP:LISTEN -n -P | awk '/java/ {print $2}' | xargs -r kill -9'
+alias kill-gateway='lsof -iTCP:8085 -sTCP:LISTEN -n -P | awk '/java/ {print $2}' | xargs -r kill -9'

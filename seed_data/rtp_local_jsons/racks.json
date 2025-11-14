@@ -1,0 +1,72 @@
+[
+    {
+        "position": "026.031",
+        "direction": 0,
+        "last_store_position": "027.028",
+        "id": "001",
+        "racktype": "33",
+        "reserved_store_position": "undefined",
+        "is_stored": true,
+        "lifted_butler_id": null
+    },
+    {
+        "position": "026.030",
+        "direction": 0,
+        "last_store_position": "028.028",
+        "id": "002",
+        "racktype": "33",
+        "reserved_store_position": "undefined",
+        "is_stored": true,
+        "lifted_butler_id": null
+    },
+    {
+        "position": "028.025",
+        "direction": 0,
+        "last_store_position": "028.023",
+        "id": "003",
+        "racktype": "33",
+        "reserved_store_position": "undefined",
+        "is_stored": true,
+        "lifted_butler_id": null
+    },
+    {
+        "position": "028.037",
+        "direction": 0,
+        "last_store_position": "027.034",
+        "id": "004",
+        "racktype": "33",
+        "reserved_store_position": "undefined",
+        "is_stored": true,
+        "lifted_butler_id": null
+    },
+    {
+        "position": "024.034",
+        "direction": 0,
+        "last_store_position": "026.033",
+        "id": "005",
+        "racktype": "33",
+        "reserved_store_position": "undefined",
+        "is_stored": true,
+        "lifted_butler_id": null
+    },
+    {
+        "position": "025.031",
+        "direction": 0,
+        "last_store_position": "027.037",
+        "id": "017",
+        "racktype": "33",
+        "reserved_store_position": "undefined",
+        "is_stored": true,
+        "lifted_butler_id": null
+    },
+    {
+        "position": "023.031",
+        "direction": 0,
+        "last_store_position": "023.025",
+        "id": "018",
+        "racktype": "33",
+        "reserved_store_position": "undefined",
+        "is_stored": true,
+        "lifted_butler_id": null
+    }
+]

@@ -1,0 +1,105 @@
+[{
+		"charger_id": 1,
+		"charger_location": "033.016",
+		"charger_direction": 3,
+		"entry_point_location": "097.097",
+		"entry_point_direction": 3,
+		"reinit_point_location": "097.097",
+		"reinit_point_direction": 3,
+		"status": "disconnected",
+		"mode": "error",
+		"charger_type": "rectangular_plate_charger",
+		"charge": 0,
+		"attached_butler_id": "undefined",
+		"temperature_master_data": [{
+			"timestamp": "2019-04-29T11:44:26Z",
+			"status": "free",
+			"data": 0.0
+		}],
+		"temperature_slave_data": [{
+			"timestamp": "2019-04-29T11:44:26Z",
+			"status": "free",
+			"data": 0.0
+		}],
+		"error_reason": "temp_sensor",
+		"coordinate": [16, 33],
+		"blocked_by_butler_ids": []
+	}, {
+		"charger_id": 4,
+		"charger_location": "032.033",
+		"charger_direction": 1,
+		"entry_point_location": "098.098",
+		"entry_point_direction": 1,
+		"reinit_point_location": "098.098",
+		"reinit_point_direction": 1,
+		"status": "disconnected",
+		"mode": "error",
+		"charger_type": "rectangular_plate_charger",
+		"charge": 0,
+		"attached_butler_id": "undefined",
+		"temperature_master_data": [{
+			"timestamp": "2019-04-29T11:44:26Z",
+			"status": "free",
+			"data": 0.0
+		}],
+		"temperature_slave_data": [{
+			"timestamp": "2019-04-29T11:44:26Z",
+			"status": "free",
+			"data": 0.0
+		}],
+		"error_reason": "temp_sensor",
+		"coordinate": [33, 32],
+		"blocked_by_butler_ids": []
+	}, {
+		"charger_id": 2,
+		"charger_location": "032.015",
+		"charger_direction": 1,
+		"entry_point_location": "096.096",
+		"entry_point_direction": 1,
+		"reinit_point_location": "096.096",
+		"reinit_point_direction": 1,
+		"status": "disconnected",
+		"mode": "error",
+		"charger_type": "rectangular_plate_charger",
+		"charge": 0,
+		"attached_butler_id": "undefined",
+		"temperature_master_data": [{
+			"timestamp": "2019-04-29T11:44:26Z",
+			"status": "free",
+			"data": 0.0
+		}],
+		"temperature_slave_data": [{
+			"timestamp": "2019-04-29T11:44:26Z",
+			"status": "free",
+			"data": 0.0
+		}],
+		"error_reason": "temp_sensor",
+		"coordinate": [15, 32],
+		"blocked_by_butler_ids": []
+	}, {
+		"charger_id": 5,
+		"charger_location": "033.033",
+		"charger_direction": 1,
+		"entry_point_location": "099.099",
+		"entry_point_direction": 1,
+		"reinit_point_location": "099.099",
+		"reinit_point_direction": 1,
+		"status": "disconnected",
+		"mode": "error",
+		"charger_type": "rectangular_plate_charger",
+		"charge": 0,
+		"attached_butler_id": "undefined",
+		"temperature_master_data": [{
+			"timestamp": "2019-04-29T11:44:26Z",
+			"status": "free",
+			"data": 0.0
+		}],
+		"temperature_slave_data": [{
+			"timestamp": "2019-04-29T11:44:26Z",
+			"status": "free",
+			"data": 0.0
+		}],
+		"error_reason": "temp_sensor",
+		"coordinate": [33, 33],
+		"blocked_by_butler_ids": []
+	}]

@@ -1,0 +1,125 @@
+[
+	{
+		"pps_id": 1,
+		"location": "018.016",
+		"status": "pick_mode",
+		"queue_barcodes": [
+			"018.016",
+			"018.015",
+			"018.014"
+		],
+		"pick_position": "018.016",
+		"pick_direction": 0,
+		"paused": false,
+		"allowed_modes": [
+			"put",
+			"pick",
+			"audit"
+		],
+		"pps_url": "http://localhost:8181/pps/1/api/"
+	},
+	{
+		"pps_id": 2,
+		"location": "018.022",
+		"status": "pick_mode",
+		"queue_barcodes": [
+			"018.022",
+			"018.021",
+			"018.020"
+		],
+		"pick_position": "018.022",
+		"pick_direction": 0,
+		"paused": false,
+		"allowed_modes": [
+			"put",
+			"pick",
+			"audit"
+		],
+		"pps_url": "http://localhost:8181/pps/2/api/"
+	},
+	{
+		"pps_id": 3,
+		"location": "018.028",
+		"status": "pick_mode",
+		"queue_barcodes": [
+			"018.028",
+			"018.027",
+			"018.026"
+		],
+		"pick_position": "018.028",
+		"pick_direction": 0,
+		"paused": false,
+		"allowed_modes": [
+			"put",
+			"pick",
+			"audit"
+		],
+		"pps_url": "http://localhost:8181/pps/3/api/"
+	},
+	{
+		"pps_id": 4,
+		"location": "018.034",
+		"status": "pick_mode",
+		"queue_barcodes": [
+			"018.034",
+			"018.033",
+			"018.032"
+		],
+		"pick_position": "018.034",
+		"pick_direction": 0,
+		"paused": false,
+		"allowed_modes": [
+			"put",
+			"pick",
+			"audit"
+		],
+		"pps_url": "http://localhost:8181/pps/4/api/"
+	},
+	{
+		"pps_id": 5,
+		"location": "021.041",
+		"status": "pick_mode",
+		"queue_barcodes": [
+			"021.041",
+			"020.041",
+			"019.041"
+		],
+		"pick_position": "021.041",
+		"pick_direction": 3,
+		"paused": false,
+		"allowed_modes": [
+			"put",
+			"pick",
+			"audit"
+		],
+		"pps_url": "http://localhost:8181/pps/5/api/"
+	},
+	{
+		"pps_id": 6,
+		"location": "031.041",
+		"status": "put_mode",
+		"type": "msu_extraction",
+		"queue_barcodes": ["031.041"],
+		"pick_position": "031.041",
+		"pick_direction": 3,
+		"paused": false,
+		"allowed_modes": [
+			"put"
+		],
+		"pps_url": "http://localhost:8181/pps/5/api/",
+		"docking_stations": [
+			{
+				"dock_station_id": "1",
+				"rollcage_type_id": "Type2",
+				"group_id": 1,
+				"tags": []
+			},
+			{
+				"dock_station_id": "2",
+				"rollcage_type_id": "Type2",
+				"group_id": 2,
+				"tags": []
+			}
+		]
+      }
+]

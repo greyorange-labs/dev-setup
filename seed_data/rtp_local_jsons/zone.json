@@ -1,0 +1,33 @@
+[
+	{
+		"zonerec": {
+			"zone_id": "zone1",
+			"blocked": false,
+			"paused": false
+		}
+	}, {
+		"zonerec": {
+			"zone_id": "zone2",
+			"blocked": false,
+			"paused": false
+		}
+	}, {
+		"zonerec": {
+			"zone_id": "zone3",
+			"blocked": false,
+			"paused": false
+		}
+	}, {
+		"zonerec": {
+			"zone_id": "zone4",
+			"blocked": false,
+			"paused": false
+		}
+	}, {
+		"zonerec": {
+			"zone_id": "defzone",
+			"blocked": false,
+			"paused": false
+		}
+	}
+]
